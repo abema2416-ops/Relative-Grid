@@ -46,8 +46,9 @@ def solve(H,k,deadline,kmin=1):
         res=dfs([])
         if res: return kk,res,nodes[0]
     return None,None,nodes[0]
-H=json.load(open(sys.argv[1]))[0]['H']
-t=time.time()
-try:
-    print(solve(H,int(sys.argv[2]),t+float(sys.argv[3])),'за',round(time.time()-t,1),'с')
-except TimeoutError: print('не успел за',sys.argv[3],'с')
+if __name__=='__main__':
+    H=json.load(open(sys.argv[1]))[0]['H']
+    t=time.time()
+    try:
+        print(solve(H,int(sys.argv[2]),t+float(sys.argv[3])),'за',round(time.time()-t,1),'с')
+    except TimeoutError: print('не успел за',sys.argv[3],'с')
