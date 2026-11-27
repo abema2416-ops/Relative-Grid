@@ -1,0 +1,21 @@
+{"plugins": [],
+ "package": "setka",
+ "options": {},
+ "name": "Setka",
+ "isModule": false,
+ "importArts":
+ {"Setka.Stretch":
+  [["/home/claude/relative-grid/lean/.lake/build/lib/lean/Setka/Stretch.olean"]],
+  "Setka.Rotation":
+  [["/home/claude/relative-grid/lean/.lake/build/lib/lean/Setka/Rotation.olean"]],
+  "Setka.Heights":
+  [["/home/claude/relative-grid/lean/.lake/build/lib/lean/Setka/Heights.olean"]],
+  "Setka.Glue":
+  [["/home/claude/relative-grid/lean/.lake/build/lib/lean/Setka/Glue.olean"]],
+  "Setka.Core":
+  [["/home/claude/relative-grid/lean/.lake/build/lib/lean/Setka/Core.olean"]],
+  "Setka.Bridge":
+  [["/home/claude/relative-grid/lean/.lake/build/lib/lean/Setka/Bridge.olean"]],
+  "Setka.Basic":
+  [["/home/claude/relative-grid/lean/.lake/build/lib/lean/Setka/Basic.olean"]]},
+ "dynlibs": []}

@@ -184,7 +184,7 @@ N=2^{\,z_{B_0}-1}\prod_{B\ne B_0,\ B\text{ 非空}}\bigl(2^{z_B}-1\bigr).
 \paragraph{地形。} 设 $B\subset\Z^{n-1}$ 为底面，$h\colon B\to\{1,2,\dots\}$ 为高度，$O=\{(b,j):0\le j<h(b)\}$。考虑这样的模型：每次操作把由整根柱子组成的区域向上拉伸 $f$ 倍；于是柱高等于包含它的那些操作的倍数之积。设 $H$ 为大于 1 的不同高度的集合，$D=|H|$，$R(H)$ 为最少的因子个数，使每个高度都是其中某个子集之积（每个因子至多用一次）。则 $\ell(O)\le \ell(B)+R(H)\le\ell(B)+D$。
 
 \begin{theorem}\label{thm:np}
-若所有高度无平方因子，则 $R(H)$ 等于各高度素因子集合族的正规集基的最小规模。因此计算 $R$ 是 NP 困难的。
+若所有高度无平方因子，则 $R(H)$ 等于各高度素因子集合族的正规集基的最小规模。因此计算 $R$ 是 NP 困难的（高度以二进制表示）。
 \end{theorem}
 \begin{proof}
 集族 $\mathcal F$ 的正规集基是一组集合 $\mathcal B$，使 $\mathcal F$ 中每个集合都是 $\mathcal B$ 中两两不交集合的并。被 $p^2$ 整除的因子不会出现在无平方因子高度的分解中；对其余因子 $m$ 对应其素因子集合 $P(m)$。若 $h=m_1\cdots m_r$，则各 $P(m_j)$ 两两不交且并为 $P(h)$。反之，由正规集基得到因子：各集合中素数之积。两者规模相同。给有限集的元素分配不同素数，即可这样编码任意子集族。正规集基问题是强 NP 完全的 \cite{jiang}。
@@ -266,7 +266,7 @@ $4\times4\times4$ & 3 & $\le3$ & $4\,760\,995$\\
 
 \section{形式化与程序}\label{sec:formal}
 
-系统核心用 Lean~4 \cite{lean} 写成（版本 4.37.0-rc1，无外部库）：24 个定理，只依赖标准公理（\texttt{propext}、\texttt{Classical.choice}、\texttt{Quot.sound}），没有缺口（\texttt{sorry}）。机器检验的内容包括：拉伸下的格点计数与无重叠；压缩下格点的合并；引理~\ref{lem:bit} 中的计数；定理~\ref{thm:R} 的 (a)–(c) 及 (d) 的替换步骤；$90^\circ$ 旋转的可逆性；定理~\ref{thm:affine}(a,b) 的格点部分；全部 256 种构型的顶点计数及定理~\ref{thm:holes} 的 (b)–(d)。未形式化的有：定理~\ref{thm:holes}(a) 的拓扑部分、极限以及 NP 困难性（后者依赖已发表的结果 \cite{jiang}）。
+系统核心用 Lean~4 \cite{lean} 写成（版本 4.37.0-rc1，无外部库）：点、物体、操作 $\alpha$、$\sigma$、$\beta$、规则 P3 与操作链的定义，以及 36 个定理，只依赖标准公理（\texttt{propext}、\texttt{Classical.choice}、\texttt{Quot.sound}），没有缺口（\texttt{sorry}）。机器检验的内容包括：定理~\ref{thm:bounds}(a) 的下界 $m(O)\le\ell(O)$（对整个核心成立）；拉伸无损失；$\sigma$ 的原像；引理~\ref{lem:bit} 的结构部分；定理~\ref{thm:loss} 的生长步骤；拉伸下外接框不缩小（因此第~\ref{sec:conj} 节中有界范围内的穷举是精确的）；定理~\ref{thm:np} 中归约的关键步骤；拉伸下的格点计数与无重叠；压缩下格点的合并；引理~\ref{lem:bit} 中的计数；定理~\ref{thm:R} 的 (a)–(c) 及 (d) 的替换步骤；$90^\circ$ 旋转的可逆性；定理~\ref{thm:affine}(a,b) 的格点部分；全部 256 种构型的顶点计数及定理~\ref{thm:holes} 的 (b)–(d)。未形式化的有：定理~\ref{thm:holes}(a) 的拓扑部分、极限以及 NP 困难性（后者依赖已发表的结果 \cite{jiang}）。
 
 所有穷举都由 Python 和 C++ 程序完成；程序、数据和 Lean 文件均已公开（见首页脚注中的链接）。
 

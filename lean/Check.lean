@@ -24,3 +24,15 @@ open Setka
 #print axioms glue_join
 #print axioms d_le_glues
 #print axioms loss_ge_bits_anchor
+#print axioms Setka.Core.step_spreads
+#print axioms Setka.Core.chain_spreads
+#print axioms Setka.Core.axes_le_length
+#print axioms Setka.Core.sigma_preimage
+#print axioms Setka.Core.shrink_same_of_blocks
+#print axioms Setka.Core.anchor_of_subset
+#print axioms Setka.Core.shrinkCell_eq_iff
+#print axioms Setka.Core.grow_one
+#print axioms Setka.Core.stretch_frame
+#print axioms Setka.Core.sqfree_dvd
+#print axioms Setka.Core.sqfree_parts_disjoint
+#print axioms Setka.Core.stretch_lossless

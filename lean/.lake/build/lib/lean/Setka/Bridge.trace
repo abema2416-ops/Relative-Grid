@@ -1,0 +1,29 @@
+{"synthetic": false,
+ "schemaVersion": "2025-09-10",
+ "outputs":
+ {"o": ["1dcad443af0b842b.olean"],
+  "m": false,
+  "i": "2b9002d4193166e9.ilean",
+  "c": "dfd89daef8125b9f.c"},
+ "log":
+ [{"message":
+   ".> LEAN_PATH=/home/claude/relative-grid/lean/.lake/build/lib/lean /tmp/claude-0/-home-claude/70a5592c-c34c-5075-ac31-210cdddf20fb/scratchpad/lean_dl/lean-4.37.0-rc1-linux/bin/lean /home/claude/relative-grid/lean/Setka/Bridge.lean -o /home/claude/relative-grid/lean/.lake/build/lib/lean/Setka/Bridge.olean -i /home/claude/relative-grid/lean/.lake/build/lib/lean/Setka/Bridge.ilean -c /home/claude/relative-grid/lean/.lake/build/ir/Setka/Bridge.c --setup /home/claude/relative-grid/lean/.lake/build/ir/Setka/Bridge.setup.json --json",
+   "level": "trace"}],
+ "inputs":
+ [["deps",
+   [["setka/Setka:extraDep", "3bbcb9642bf89ff6"],
+    ["imports", "00000000000006bb"]]],
+  ["libs",
+   [["import dynlibs", "00000000000006bb"],
+    ["package external libraries", "00000000000006bb"],
+    ["module dynlibs", "00000000000006bb"],
+    ["module plugins", "00000000000006bb"]]],
+  ["Lean 4.37.0, commit 0b77e12952ad39077d80d8bd6b66d601f225c321",
+   "bcf07d1dd7796db5"],
+  ["/home/claude/relative-grid/lean/Setka/Bridge.lean", "7cec42e646136c12"],
+  ["options", "00000000000006bb"],
+  ["isModule: false", "feefd2a0d3a1847e"],
+  ["Module.name: Setka.Bridge", "cc086de543997acd"],
+  ["Package.id?: (some setka)", "60cb64d07056b112"],
+  ["Module.leanArgs: #[]", "00000000000006bb"]],
+ "depHash": "b008caba4060cd2f"}

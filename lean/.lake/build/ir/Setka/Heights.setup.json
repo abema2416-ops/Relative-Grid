@@ -1,0 +1,9 @@
+{"plugins": [],
+ "package": "setka",
+ "options": {},
+ "name": "Setka.Heights",
+ "isModule": false,
+ "importArts":
+ {"Setka.Basic":
+  [["/home/claude/relative-grid/lean/.lake/build/lib/lean/Setka/Basic.olean"]]},
+ "dynlibs": []}

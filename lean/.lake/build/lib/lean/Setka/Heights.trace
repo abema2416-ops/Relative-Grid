@@ -1,0 +1,46 @@
+{"synthetic": false,
+ "schemaVersion": "2025-09-10",
+ "outputs":
+ {"o": ["1b445feea2287577.olean"],
+  "m": false,
+  "i": "8201efcd5caff2c7.ilean",
+  "c": "230f5990dfa7ba74.c"},
+ "log":
+ [{"message":
+   ".> LEAN_PATH=/home/claude/relative-grid/lean/.lake/build/lib/lean /tmp/claude-0/-home-claude/70a5592c-c34c-5075-ac31-210cdddf20fb/scratchpad/lean_dl/lean-4.37.0-rc1-linux/bin/lean /home/claude/relative-grid/lean/Setka/Heights.lean -o /home/claude/relative-grid/lean/.lake/build/lib/lean/Setka/Heights.olean -i /home/claude/relative-grid/lean/.lake/build/lib/lean/Setka/Heights.ilean -c /home/claude/relative-grid/lean/.lake/build/ir/Setka/Heights.c --setup /home/claude/relative-grid/lean/.lake/build/ir/Setka/Heights.setup.json --json",
+   "level": "trace"},
+  {"message":
+   "Setka/Heights.lean:20:33: `dif_pos` has been deprecated: Use `dite_eq_left` instead\n\nHint: Replace the deprecated name:\n  d̵i̵f̵_̵p̵o̵s̵d̲i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲",
+   "level": "warning"},
+  {"message":
+   "Setka/Heights.lean:102:27: `if_pos` has been deprecated: Use `ite_eq_left` instead\n\nHint: Replace the deprecated name:\n  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲",
+   "level": "warning"},
+  {"message":
+   "Setka/Heights.lean:108:27: `if_neg` has been deprecated: Use `ite_eq_right` instead\n\nHint: Replace the deprecated name:\n  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲",
+   "level": "warning"},
+  {"message":
+   "Setka/Heights.lean:122:32: `dif_pos` has been deprecated: Use `dite_eq_left` instead\n\nHint: Replace the deprecated name:\n  d̵i̵f̵_̵p̵o̵s̵d̲i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲",
+   "level": "warning"},
+  {"message":
+   "Setka/Heights.lean:213:56: Variable name `he` is not explicitly referenced.\n\nHint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:\n  [apply] _he\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"}],
+ "inputs":
+ [["deps",
+   [["setka/Setka:extraDep", "3bbcb9642bf89ff6"],
+    ["imports",
+     [["Setka.Basic transitive imports (legacy)", "00000000000006bb"],
+      ["Setka.Basic:importAllArts", "dcdba928ae08d476"]]]]],
+  ["libs",
+   [["import dynlibs", "00000000000006bb"],
+    ["package external libraries", "00000000000006bb"],
+    ["module dynlibs", "00000000000006bb"],
+    ["module plugins", "00000000000006bb"]]],
+  ["Lean 4.37.0, commit 0b77e12952ad39077d80d8bd6b66d601f225c321",
+   "bcf07d1dd7796db5"],
+  ["/home/claude/relative-grid/lean/Setka/Heights.lean", "2fc39f2b5fdc61dd"],
+  ["options", "00000000000006bb"],
+  ["isModule: false", "feefd2a0d3a1847e"],
+  ["Module.name: Setka.Heights", "45f85c89bb9f1337"],
+  ["Package.id?: (some setka)", "60cb64d07056b112"],
+  ["Module.leanArgs: #[]", "00000000000006bb"]],
+ "depHash": "e03fba0163ceabe5"}
