@@ -1,0 +1,296 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[a4paper,margin=2.4cm]{geometry}
+\usepackage{fontspec}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{unicode-math}
+\setmainfont{Noto Serif CJK SC}
+\setsansfont{Noto Sans CJK SC}
+\setmonofont{DejaVu Sans Mono}[Scale=0.85]
+\setmathfont{Latin Modern Math}
+\XeTeXlinebreaklocale "zh"
+\XeTeXlinebreakskip = 0pt plus 1pt
+\linespread{1.25}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\setlist{nosep,leftmargin=2em}
+\usepackage[hidelinks]{hyperref}
+\renewcommand{\abstractname}{摘要}
+\renewcommand{\refname}{参考文献}
+\renewcommand{\proofname}{证明}
+\renewcommand{\thesection}{\arabic{section}}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{定理}
+\newtheorem{lemma}[theorem]{引理}
+\theoremstyle{definition}
+\newtheorem{definition}{定义}
+\newtheorem{conjecture}{猜想}
+\newtheorem{problem}{问题}
+\theoremstyle{remark}
+\newtheorem*{remark}{注}
+\newtheorem*{example}{例}
+
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\lo}{\lambda}
+\DeclareMathOperator{\vol}{vol}
+
+\title{\textbf{相对网格：\\ 格点形状上的操作、信息损失与操作次数}}
+\author{穆罕默德·扎法罗夫（Muhammad Zafarov）\thanks{本系统、定义与猜想的作者。证明与文本在 AI 助手 Claude（Anthropic）的帮助下完成。文本采用 CC~BY~4.0 许可；程序与 Lean 文件采用 MIT 许可。完整文本（俄文）、验证程序与形式化：\url{https://github.com/abema2416-ops/Relative-Grid}。英文版与俄文版见同一仓库。}}
+\date{预印本，2026 年 11 月 27 日}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+我们研究格 $\Z^n$ 中有限格点集合上的一组操作：沿一条坐标轴把物体的一部分按整数倍拉伸或压缩（$\alpha$）、删除格点（$\sigma$）、把相接触的格点粘合或分开（$\beta_\pm$）。每个操作对应一个信息损失——把区域内容映到同一结果的个数取以 2 为底的对数；每个物体对应从单个格点构造它所需的操作次数 $\ell(O)$。我们证明：每消失一个格点至少损失 1 比特，并给出压缩一行时原像个数的精确公式；格点拉伸与空间的仿射拉伸完全一致，没有任何取整；在平面上拉伸不改变洞的个数，而一次粘合至多改变 1。对于“地形”（柱状体），计算操作次数包含 NP 困难的正规集基问题；我们给出上下界和精确的特殊情形。我们提出一个猜想（“线段规则”），把对所有区域的搜索化为对物体线段的搜索；它已在 2 维和 3 维的 $4\,835\,965$ 个形状上通过穷举验证。系统的核心已在 Lean~4 中形式化并检验。
+\end{abstract}
+
+\section{引言}
+
+被网格切成格点的形状是离散几何、数字拓扑和图像处理中的常见对象。通常研究的操作是形态学操作（膨胀、腐蚀）\cite{serra}、单个格点的移动 \cite{akitaya} 或自组装 \cite{soloveichik}。本文提出另一组基本操作：把物体的一部分从它的端层出发，沿一条轴像手风琴一样按整数倍拉伸或压缩。这样的操作恰好对应空间的仿射拉伸（定理~\ref{thm:affine}），但其参数（区域、轴、方向、倍数）用格点给出。
+
+我们引入两个量。操作的\emph{损失}是无法由结果和参数恢复的比特数；这就是 Landauer 意义下的逻辑不可逆性 \cite{landauer}，应用于形状上的操作。\emph{操作次数} $\ell(O)$ 是从一个格点构造 $O$ 的最短操作链的长度；它类似于形状的描述复杂度 \cite{soloveichik} 和组装指数 \cite{assembly}，但针对几何操作。我们把\emph{粘合}与接触分开：两个格点可以接触而不相连。这样洞的个数就成为所选粘合的函数（定理~\ref{thm:holes}）。
+
+主要结果：损失的下界和压缩一行的精确公式（第~\ref{sec:loss} 节）；通往连续几何的桥梁（第~\ref{sec:affine} 节）；平面上的粘合与洞（第~\ref{sec:holes} 节）；操作次数的上下界及地形情形的 NP 困难性（第~\ref{sec:count} 节）；由穷举支持的猜想和公开问题（第~\ref{sec:conj} 节）。第~\ref{sec:formal} 节介绍 Lean~4 形式化与程序。
+
+\section{定义}\label{sec:def}
+
+记 $e_1,\dots,e_n$ 为各轴单位向量，$|X|$ 为有限集 $X$ 的元素个数，$\|v\|_1=\sum|v_i|$，$\|v\|_\infty=\max|v_i|$。
+
+\begin{definition}[格点、物体]
+\emph{格点}是一点 $c\in\Z^n$，它代表立方体 $Q(c)=c+[0,1]^n$。\emph{物体}是一对 $(O,S)$，其中 $O\subset\Z^n$ 是有限非空格点集，$S$ 是\emph{粘合}的集合：$O$ 中相接触（$\|c-c'\|_\infty=1$）的格点的无序对。接触而未粘合称为\emph{裂缝}。相差 $\Z^n$ 中平移的物体视为同一形状。\emph{块}是粘合图的连通分支。
+\end{definition}
+
+\begin{definition}[操作 $\alpha$]
+参数：有限区域 $Z\subset\Z^n$、轴 $i$、方向 $s\in\{\pm1\}$、倍数 $f\in\{2,3,\dots\}$ 以及类型（“拉伸”或“压缩”）。设 $G=O\cap Z\neq\varnothing$ 为组。令 $a=\min\{s c_i: c\in G\}$（固定端），$t(c)=s c_i-a\ge0$；对整数 $p$，记 $c[p]$ 为第 $i$ 个坐标等于 $sp$、其余坐标与 $c$ 相同的格点。则
+\[
+\text{拉伸：} \alpha(O)=(O\setminus G)\cup\{c[a+f\,t(c)+j]: c\in G,\ 0\le j<f\},
+\]
+\[
+\text{压缩：} \alpha(O)=(O\setminus G)\cup\{c[a+\lfloor t(c)/f\rfloor]: c\in G\}.
+\]
+若新格点与 $O\setminus G$ 不相交，则操作是允许的（规则 P3）。拉伸时一个格点的像是 $f$ 个相连且互相粘合的格点；粘合 $\{c,c'\}$ 变为它们的像中所有边相邻对的粘合。若拉伸或压缩后某对已粘合格点不再接触，则该操作不允许（规则 P5）：粘合只能由 $\beta_-$ 去掉，或随格点一起删去。
+\end{definition}
+
+\begin{definition}[$\sigma$、$\beta_\pm$]
+$\sigma_Z(O)=O\setminus Z$。操作 $\beta_+$ 向 $S$ 中加入一组接触但未粘合的格点对；$\beta_-$ 去掉一组粘合。格点本身不变。
+\end{definition}
+
+\begin{definition}[损失、操作次数]
+参数固定的操作 $\varphi$ 可作用于其区域的任意内容。其\emph{损失} $\lo(\varphi,O)=\log_2 N$，其中 $N$ 是在区域外与 $O$ 一致、$\varphi$ 允许且 $\varphi(O')=\varphi(O)$ 的物体 $O'$ 的个数。操作链的损失是各步损失之和。\emph{操作次数} $\ell(O)$ 是把一个格点变为 $O$（不计平移）的操作链的最小长度。
+\end{definition}
+
+拉伸、$\beta_+$ 和 $\beta_-$ 没有损失：由结果和参数可唯一恢复原状态（对拉伸而言，因为不同格点的像互不相交）。
+
+\begin{definition}[薄物体]
+$k$ 维胞腔（$0\le k\le n$）是集合 $c+\sum_{j\in I}[0,1]e_j$，$|I|=k$。秩 $k<n$ 的物体是 $k$ 维胞腔的有限集。在这样的物体上，操作 $\alpha$ 就是外部空间的操作 $\alpha$ 作用于它的每个胞腔（视为点集）：沿轴 $i$ 的映射 $y\mapsto a+f(y-a)$。沿轴 $i$ 延伸的胞腔变为 $f$ 个 $k$ 维胞腔；沿轴 $i$ “很薄”的胞腔变为一个胞腔，移到点 $a+f(c_i-a)$。秩 $k>n$ 的物体在秩 $n$ 的空间中只能部分地表示。
+\end{definition}
+
+薄物体下文只在例子中出现；所有定理都针对满秩 $k=n$ 的物体。
+
+\section{信息损失}\label{sec:loss}
+
+\begin{lemma}\label{lem:bit}
+若一个操作使格点数减少 $d>0$，则其损失至少为 $d$ 比特。
+\end{lemma}
+\begin{proof}
+拉伸不删除格点。对 $\sigma_Z$，结果与区域内容无关，而内容至少有 $2^d$ 种。设操作为压缩。组中沿轴 $i$ 同一行的格点按 $\lfloor t(c)/f\rfloor$ 分块，同块格点合并为一个。若非空块 $B$ 含 $m_B$ 个格点，则 $d=\sum_B(m_B-1)$。取达到 $a$ 的格点 $e\in G$。在每个非空块中保留其格点的任意非空子集，且总保留 $e$。固定端和剩余格点的 $t(c)$ 不变，每块仍非空，故结果相同且操作允许。这样的变体至少有 $2^{m_{B_0}-1}\prod_{B\ne B_0}(2^{m_B}-1)\ge 2^{d}$ 种。
+\end{proof}
+
+\begin{theorem}\label{thm:loss}
+把物体 $A$ 变为物体 $B$ 的任何过程，总损失至少为 $|A|-|B|$ 比特。若 $A$ 面连通且 $B=A\setminus H\neq\varnothing$，$|H|=h$，则 $A\to B$ 的最小损失恰为 $h$ 比特，而 $B\to A$ 的最小损失为零。
+\end{theorem}
+\begin{proof}
+格点数逐步变化 $-d_1,-d_2,\dots$，且 $\sum d_j=|A|-|B|$。由引理~\ref{lem:bit}，每步损失至少 $\max(d_j,0)$，总和至少 $|A|-|B|$。用 $\sigma_H$ 可达到 $h$（$2^h$ 个原像）。反之，$H$ 的每个面连通分支都与 $B$ 共面，因此可以把 $H$ 的格点排序，使每个都与已建成的格点共面；每个格点由相邻格点向它方向拉伸两倍而恢复，无损失。
+\end{proof}
+
+因此删除 $h$ 个格点要花 $h$ 比特，恢复它们却不花任何代价。这种不对称在操作次数中不存在：两个方向所需的工作量相当。
+
+\begin{theorem}[压缩一行的精确损失]\label{thm:exact}
+设区域是一行中位置为 $0,\dots,L-1$ 的一段，$a$ 为最小的被占位置，该行压缩 $f$ 倍。把位置 $a,\dots,L-1$ 按 $\lfloor (p-a)/f\rfloor$ 分块；$z_B$ 为块 $B$ 中区域位置的个数，$B_0$ 为锚点所在块。则给出相同结果的区域内容个数为
+\[
+N=2^{\,z_{B_0}-1}\prod_{B\ne B_0,\ B\text{ 非空}}\bigl(2^{z_B}-1\bigr).
+\]
+\end{theorem}
+\begin{proof}
+结果由锚点 $a$ 和非空块的集合决定。内容 $X$ 给出相同结果，当且仅当其最左格点为 $a$（否则结果的第一个格点会移动，或在 $a$ 左边出现格点），且非空块相同。锚点块中 $a$ 必须存在，其余 $z_{B_0}-1$ 个位置任意；其他非空块中任取非空子集；空块保持为空。各块选择相互独立。
+\end{proof}
+
+\begin{example}
+区域长 20、$f=2$、消失 4 个格点时，引理给出 $N\ge16$，定理给出 $N=4374$。该公式在 $2872$ 个长度不超过 13、$f=2,3,4$ 的随机行上与穷举完全一致。
+\end{example}
+
+\section{与仿射拉伸的关系}\label{sec:affine}
+
+记 $F(O)=\bigcup_{c\in O}Q(c)$ 为物体所表示的图形，并令 $y=sx_i$。操作 $\alpha$ 给出映射 $T\colon y\mapsto a+f(y-a)$，其余坐标不变。
+
+\begin{theorem}\label{thm:affine}
+\begin{enumerate}[label=\upshape(\alph*)]
+\item 对拉伸，$F(\alpha(O))=F(O\setminus G)\cup T(F(G))$，精确成立，没有取整。
+\item 对压缩，$\alpha(O)=(O\setminus G)\cup\{c: \vol(Q(c)\cap T^{-1}(F(G)))>0\}$：格点压缩就是仿射压缩，再按“被触及即占用”记录。
+\item 设图形 $K\subset F$ 有界，在网格层级 $N_1\mid N_2\mid\cdots$ 上记录 $O_N$ 与组 $G_N$ 按对称差体积收敛于它们，且锚点 $a_N/N\to A$。则拉伸 $\alpha(O_N)$ 按体积收敛于 $(F\setminus K)\cup T_A(K)$；任意有限拉伸链亦然。
+\end{enumerate}
+\end{theorem}
+\begin{proof}
+(a) 位置为 $p=a+t$ 的格点变为位置 $a+ft,\dots,a+ft+f-1$ 的格点，它们在 $y$ 方向合起来占据 $[a+ft,\,a+ft+f)=T([p,p+1))$，在其他轴上与原格点相同。(b) $T^{-1}$ 把格点立方体映为位置 $a+\lfloor t/f\rfloor$ 的格点内一层厚 $1/f$ 的薄片，其体积为正。(c) 由 (a) 及 $\vol((X\cup Y)\triangle(X'\cup Y'))\le\vol(X\triangle X')+\vol(Y\triangle Y')$；$T$ 使体积乘 $f$，锚点偏移 $(f-1)(A-a_N/N)\to0$ 是有限体积图形的微小平移。
+\end{proof}
+
+因此操作 $\alpha$ 本身是经典的仿射拉伸；新的是它的给出方式（以格点表示区域和固定端）、损失的计量以及操作次数的计数。含压缩和 $\sigma$ 的操作链的极限仍是公开问题（问题~\ref{pr:limit}）。
+
+\section{平面上的粘合与洞}\label{sec:holes}
+
+设 $n=2$ 且只沿边粘合。构造二维胞腔复形 $K(O,S)$：每个格点取一个正方形 $Q(c)$，并把粘合对的公共边等同。洞数定义为 $d=b_1(K)$；$q$ 表示周围有完全粘合的 $2\times2$ 正方形的格点个数。
+
+\begin{theorem}\label{thm:holes}
+\begin{enumerate}[label=\upshape(\alph*)]
+\item $d=(\text{块数})-|O|+|S|-q$。
+\item 允许的拉伸不改变 $d$。
+\item 增加一个粘合使 $d$ 改变 $+1$、$0$ 或 $-1$。
+\item 用拉伸和粘合从一个格点构造物体，至少需要粘合 $d$ 对；当 $q=0$ 时恰好 $d$ 对就够。
+\end{enumerate}
+\end{theorem}
+\begin{proof}
+(a) 面数 $F=|O|$。每条边至多参与一个粘合，故边数 $E=4|O|-|S|$。在格点 $p$ 处考虑图 $\Gamma(p)$：顶点为以 $p$ 为角的正方形（$k(p)$ 个），边为以 $p$ 为端点的粘合边（$s(p)$ 个）。它是 4-圈的子图，故有 $k(p)-s(p)+[\Gamma(p)\text{ 为整个圈}]$ 个分支，这也是 $K$ 在 $p$ 上方的顶点数。求和（$\sum k=4|O|$，$\sum s=2|S|$）得 $V=4|O|-2|S|+q$，$\chi(K)=|O|-|S|+q$。$K$ 的每点有圆盘或半圆盘邻域（$j\le4$ 个 $90^\circ$ 扇形或整圆），故 $K$ 是紧曲面，每个分支边界非空；于是 $b_2=0$，$b_1=b_0-\chi$。
+
+(b) 把组 $G$ 拉伸 $f$ 倍，格点增加 $(f-1)|G|$，粘合增加 $(f-1)|G|+(f-1)r$，其中 $r$ 是 $G$ 内垂直于该轴的粘合数；每个这样的对形成一个 $2\times f$ 的梯子，含 $f-1$ 个完全粘合的正方形。块数不变（P5）。由 (a)，$d$ 的变化为零。
+
+(c) 块内的粘合使 $|S|$ 加 1，$q$ 加 $0$、$1$ 或 $2$；连接两块的粘合使块数减 1，$q$ 不变。
+
+(d) 下界由 (b)、(c) 及单个格点 $d=0$ 得出。上界：沿粘合图的生成树生长物体（每个新格点由邻居拉伸得到并立即与之粘合），再加入剩余的 $|S|-|O|+1$ 个粘合；当 $q=0$ 时这恰为 $d$。
+\end{proof}
+
+公式 (a) 在 $10\,550$ 次随机拉伸和 $337$ 次粘合上与同调的直接计算一致。推论：洞有两种产生方式——粘合（零比特）或打穿（每个格点至少一比特，定理~\ref{thm:loss}）。
+
+\begin{remark}
+在三维中，若所有接触的格点都已粘合，则贯通洞的个数等于 $b_0+P-\chi$，其中 $P$ 为空腔个数；这由 Euler–Poincaré 公式和 Alexander 对偶得出，在数字拓扑中已知 \cite{toriwaki,kaczynski}。本系统自然地得到这一计数，但我们不声称它是新的。
+\end{remark}
+
+\section{操作次数}\label{sec:count}
+
+记 $m(O)$ 为使 $O$ 的格点至少有两个不同坐标值的轴的个数。
+
+\begin{theorem}\label{thm:bounds}
+\begin{enumerate}[label=\upshape(\alph*)]
+\item 对面连通物体 $O$，$m(O)\le\ell(O)\le|O|-1$，且上界只用无损失的拉伸即可达到。对在 $k$ 条轴上边长 $\ge2$ 的长方体，$\ell=k$。
+\item 若允许 $\sigma$，则对任意物体 $O$ 有 $\ell(O)\le n+1$；相应的操作链（先建外接长方体，再用 $\sigma_{P\setminus O}$ 切掉多余部分）恰好损失 $|P|-|O|$ 比特，其中 $P$ 是包含 $O$ 的最小长方体。
+\end{enumerate}
+\end{theorem}
+\begin{proof}
+(a) 第 $i$ 个坐标的取值集合只能在沿轴 $i$ 的 $\alpha$ 下增大，其他操作不会增大它。上界是逐个格点生长，如定理~\ref{thm:loss} 的证明。长方体每条轴拉伸一次即可。(b) 长方体由 (a) 得到；$\sigma_Z$ 恰有 $2^{|Z|}$ 个原像。
+\end{proof}
+
+(b) 体现了“工作量”与损失的交换：任何形状都可在 $n+1$ 步内建成，但每切掉一个格点要付一比特。
+
+\paragraph{地形。} 设 $B\subset\Z^{n-1}$ 为底面，$h\colon B\to\{1,2,\dots\}$ 为高度，$O=\{(b,j):0\le j<h(b)\}$。考虑这样的模型：每次操作把由整根柱子组成的区域向上拉伸 $f$ 倍；于是柱高等于包含它的那些操作的倍数之积。设 $H$ 为大于 1 的不同高度的集合，$D=|H|$，$R(H)$ 为最少的因子个数，使每个高度都是其中某个子集之积（每个因子至多用一次）。则 $\ell(O)\le \ell(B)+R(H)\le\ell(B)+D$。
+
+\begin{theorem}\label{thm:np}
+若所有高度无平方因子，则 $R(H)$ 等于各高度素因子集合族的正规集基的最小规模。因此计算 $R$ 是 NP 困难的。
+\end{theorem}
+\begin{proof}
+集族 $\mathcal F$ 的正规集基是一组集合 $\mathcal B$，使 $\mathcal F$ 中每个集合都是 $\mathcal B$ 中两两不交集合的并。被 $p^2$ 整除的因子不会出现在无平方因子高度的分解中；对其余因子 $m$ 对应其素因子集合 $P(m)$。若 $h=m_1\cdots m_r$，则各 $P(m_j)$ 两两不交且并为 $P(h)$。反之，由正规集基得到因子：各集合中素数之积。两者规模相同。给有限集的元素分配不同素数，即可这样编码任意子集族。正规集基问题是强 NP 完全的 \cite{jiang}。
+\end{proof}
+
+\begin{theorem}\label{thm:R}
+\begin{enumerate}[label=\upshape(\alph*)]
+\item $\lceil\log_2(D+1)\rceil\le R(H)\le D$。
+\item 若各高度两两互素，则 $R=D$。
+\item 对 $H=\{b,b^2,\dots,b^D\}$，$b\ge2$，有 $R=\lceil\log_2(D+1)\rceil$。
+\item 存在一个最小因子集，其所有元素都属于 $C(H)=H\cup\mathcal D\cup\mathcal Q$，其中 $\mathcal D$ 是至少整除两个高度的 $\ge2$ 的数，$\mathcal Q=\{h/d\ge2: h\in H,\ d\in\mathcal D,\ d\mid h\}$。因此对固定的 $k$，条件 $R\le k$ 可在关于 $D$ 与最大高度的多项式时间内检验。
+\end{enumerate}
+\end{theorem}
+\begin{proof}
+(a) $R$ 个因子至多给出 $2^R-1$ 个非空子集，而不同高度需要不同子集。(b) 两个高度共用的因子会同时整除二者。(c) 因子 $b,b^2,b^4,\dots,b^{2^{k-1}}$ 按 $e$ 的二进制表示给出所有 $b^e$，$e\le 2^k-1$。(d) 最小集中被两个高度使用的因子属于 $\mathcal D$。每个高度至多有一个“专属”因子（两个可用其积代替）。若 $h$ 的分解中有共用因子 $a$，把 $h$ 的专属因子换为 $h/a$，否则换为 $h$；集合规模不增。$|C(H)|=O(D^3h_{\max})$，对固定 $k$ 枚举 $k$ 个候选的组合是多项式的。
+\end{proof}
+
+于是操作次数既有精确的“容易”情形 (b)、(c)，也有“困难的中间地带”；对完整的 $\ell$（含部分区域，高度不仅相乘也可相加），困难性尚未证明。
+
+\section{猜想与公开问题}\label{sec:conj}
+
+\paragraph{线段规则。} 对轴 $i$，物体的\emph{线段}是沿轴 $i$ 的极大连续格点段。选定轴 $i$ 与方向 $s$ 后，\emph{线段步}是以下两种操作之一：
+\begin{itemize}
+\item \emph{相乘}：取来自不同直线、起点相同（在与 $s$ 相反一侧的端格点）的若干线段，把它们的并拉伸 $f\ge2$ 倍；
+\item \emph{延长}：取来自不同直线、终点相同的若干线段，把它们的端格点拉伸 $a+1$ 倍（$a\ge1$），即每段延长 $a$ 个格点。
+\end{itemize}
+每一步都是 $\alpha$ 的特例。记 $\ell_{\alpha}(O)$ 为用任意区域的拉伸（满足 P3 与 P5）的最少次数，$\ell_{\mathrm{seg}}(O)$ 为线段步的最少次数。
+
+\begin{conjecture}[线段规则]\label{conj:seg}
+对每个可由单个格点经拉伸得到的物体 $O$，$\ell_{\mathrm{seg}}(O)=\ell_\alpha(O)$。
+\end{conjecture}
+
+线段的个数与 $|O|$ 成线性，而区域有 $2^{|O|}$ 个，因此该猜想大大缩小了搜索（但由定理~\ref{thm:np} 并不能消除搜索）。验证——对任意区域的所有拉伸链与线段步链做穷举比较：
+
+\begin{center}
+\begin{tabular}{lccr}
+\toprule
+范围 & 维数 & 链长 & 形状数（全部一致）\\
+\midrule
+$3\times6$ & 2 & $\le3$ & $8\,631$\\
+$4\times5$ & 2 & $\le3$ & $9\,031$\\
+$3\times4$ & 2 & $\le4$ & $817$\\
+$2\times3\times3$ & 3 & $\le3$ & $7\,196$\\
+$3\times3\times3$ & 3 & $\le3$ & $30\,893$\\
+$2\times2\times3$ & 3 & $\le4$ & $1\,670$\\
+$2\times2\times4$ & 3 & $\le4$ & $16\,732$\\
+$4\times4\times4$ & 3 & $\le3$ & $4\,760\,995$\\
+\midrule
+合计 & & & $4\,835\,965$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+规则 P5 是关键：若允许拉伸撕开粘合，在 $3\times6$ 范围内可达 $9870$ 个形状，而非 $8632$ 个（含单个格点），线段规则不能描述它们。对地形，更简单的变体（按面的步）在全部 $859$ 个受测地形上与精确最小值一致。
+
+\begin{conjecture}
+对平面地形，$\ell\ge1+\lceil\log_2 D'\rceil$，其中 $D'$ 为地形中不同高度的个数。（已在 $1307$ 个地形上穷举验证。）
+\end{conjecture}
+
+\begin{conjecture}
+在定理~\ref{thm:holes}(d) 中，当 $q>0$ 时恰好 $d$ 个粘合也够。
+\end{conjecture}
+
+\begin{problem}
+一般情形下 $\ell(O)$ 的计算是否可判定？区域和倍数不受限制，中间物体可以任意大。
+\end{problem}
+
+\begin{problem}
+对哪些高度集类，$R(H)$ 可在多项式时间内计算？是否存在常数因子近似算法？
+\end{problem}
+
+\begin{problem}\label{pr:limit}
+含压缩和 $\sigma$ 的操作链在网格加细时是否有极限（参见定理~\ref{thm:affine}(c)）？
+\end{problem}
+
+\begin{problem}
+关于洞的哪些结论（定理~\ref{thm:holes}）可推广到薄物体，例如 $\Z^3$ 中由正方形组成的带？（由格点正方形组成的 Möbius 带存在；已找到的最小者含 7 个正方形。）
+\end{problem}
+
+\section{形式化与程序}\label{sec:formal}
+
+系统核心用 Lean~4 \cite{lean} 写成（版本 4.37.0-rc1，无外部库）：24 个定理，只依赖标准公理（\texttt{propext}、\texttt{Classical.choice}、\texttt{Quot.sound}），没有缺口（\texttt{sorry}）。机器检验的内容包括：拉伸下的格点计数与无重叠；压缩下格点的合并；引理~\ref{lem:bit} 中的计数；定理~\ref{thm:R} 的 (a)–(c) 及 (d) 的替换步骤；$90^\circ$ 旋转的可逆性；定理~\ref{thm:affine}(a,b) 的格点部分；全部 256 种构型的顶点计数及定理~\ref{thm:holes} 的 (b)–(d)。未形式化的有：定理~\ref{thm:holes}(a) 的拓扑部分、极限以及 NP 困难性（后者依赖已发表的结果 \cite{jiang}）。
+
+所有穷举都由 Python 和 C++ 程序完成；程序、数据和 Lean 文件均已公开（见首页脚注中的链接）。
+
+\section{相关工作}
+
+\emph{逻辑不可逆性。}以原像个数的 $\log_2$ 度量损失是标准做法 \cite{landauer,frank}；新的是把它应用于形状上的操作（引理~\ref{lem:bit}，定理~\ref{thm:loss}、\ref{thm:exact}）。
+\emph{数学形态学} \cite{serra}：拉伸和压缩类似于膨胀和腐蚀，但后者用结构元素作用于整幅图像，而不是从边缘拉伸选定部分；我们在那里没有找到以比特计的损失。
+\emph{仿射变换}：定理~\ref{thm:affine} 表明 $\alpha$ 是特殊的仿射拉伸；区别在于给出方式和计量方式。
+\emph{数字拓扑与计算同调} \cite{kong,kaczynski,toriwaki}：定理~\ref{thm:holes}(a) 是欧拉示性数计数的特例；新的是并非所有接触格点都被粘合。
+\emph{形状重构与自组装} \cite{akitaya,soloveichik}：与操作次数最接近的类比，但基本操作不同。
+\emph{组装理论} \cite{assembly}：组装指数是最少的连接步数；操作次数 $\ell$ 是几何拉伸情形的类比，而组装理论不考虑以比特计的损失。
+
+\begin{thebibliography}{99}
+\bibitem{landauer} R.~Landauer. Irreversibility and heat generation in the computing process. \emph{IBM J. Res. Dev.} \textbf{5}(3), 183--191, 1961.
+\bibitem{frank} M.~P.~Frank. Physical foundations of Landauer's principle. arXiv:1901.10327, 2019.
+\bibitem{serra} J.~Serra. \emph{Image Analysis and Mathematical Morphology}. Academic Press, 1982.
+\bibitem{kong} T.~Y.~Kong, A.~Rosenfeld. Digital topology: introduction and survey. \emph{Comput. Vision Graph. Image Process.} \textbf{48}, 357--393, 1989.
+\bibitem{kaczynski} T.~Kaczynski, K.~Mischaikow, M.~Mrozek. \emph{Computational Homology}. Springer, 2004.
+\bibitem{toriwaki} J.~Toriwaki, H.~Yoshida. \emph{Fundamentals of Three-Dimensional Digital Image Processing}. Springer, 2009.
+\bibitem{jiang} T.~Jiang, B.~Ravikumar. Minimal NFA problems are hard. \emph{SIAM J. Comput.} \textbf{22}(6), 1117--1141, 1993.
+\bibitem{akitaya} H.~A.~Akitaya et al. Compacting squares: input-sensitive in-place reconfiguration of sliding squares. arXiv:2105.07997, 2021.
+\bibitem{soloveichik} D.~Soloveichik, E.~Winfree. Complexity of self-assembled shapes. \emph{SIAM J. Comput.} \textbf{36}(6), 1544--1569, 2007.
+\bibitem{assembly} A.~Sharma, D.~Czégel, M.~Lachmann, C.~P.~Kempes, S.~I.~Walker, L.~Cronin. Assembly theory explains and quantifies selection and evolution. \emph{Nature} \textbf{622}, 321--328, 2023.
+\bibitem{lean} L.~de~Moura, S.~Ullrich. The Lean 4 theorem prover and programming language. In: \emph{CADE-28}, LNCS 12699, 625--635, 2021.
+\end{thebibliography}
+
+\end{document}

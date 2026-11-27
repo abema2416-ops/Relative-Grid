@@ -1,3 +1,11 @@
+# Relative Grid
+
+**English summary.** A system of actions on shapes made of lattice cells: stretch or compress part of a shape along one axis by an integer factor (α), delete cells (σ), glue or unglue touching cells (β). Each action has an information loss in bits; each shape has a number of actions needed to build it from one cell. Proven: every vanished cell costs at least 1 bit; cellular stretching equals the affine stretch exactly; in the plane stretching keeps the number of holes and one gluing changes it by at most 1; counting actions for reliefs is NP-hard. Conjecture (the *segment rule*) checked by exhaustive search on 4,835,965 shapes in 2D and 3D. Core formalized in Lean 4.
+
+**Read the paper:** [English](статья/setka-en.pdf) · [中文](статья/setka-zh.pdf) · [Русский](статья/setka.pdf). Author: Muhammad Zafarov. License: CC BY 4.0 (text), MIT (code). Questions, criticism and counterexamples are welcome — open an Issue.
+
+---
+
 # Относительная сетка
 
 **Система операций над формами любой размерности.** Черновик, версия 1.9 (27 ноября 2026).
@@ -17,6 +25,8 @@
 |---|---|
 | `Относительная сетка — черновик 1.9.txt` | Полный текст теории |
 | `статья/setka.pdf`, `статья/setka.tex` | Короткая статья в классическом виде (8 страниц): определения, теоремы с доказательствами, гипотезы, литература |
+| `статья/setka-en.pdf` | Та же статья на английском |
+| `статья/setka-zh.pdf` | Та же статья на китайском |
 | `Относительная сетка — результаты счёта.txt` | Приложение: счёт на малых сетках |
 | `рисунки/` | Рисунки 1–22 |
 | `программы/` | Программы проверок (как запускать — раздел 12 теории) |

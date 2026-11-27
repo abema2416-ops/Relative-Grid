@@ -1,0 +1,289 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[a4paper,margin=2.4cm]{geometry}
+\usepackage{fontspec}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{unicode-math}
+\setmainfont{Liberation Serif}
+\setmonofont{DejaVu Sans Mono}[Scale=0.85]
+\setmathfont{Latin Modern Math}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\setlist{nosep,leftmargin=2em}
+\usepackage[hidelinks]{hyperref}
+\usepackage{microtype}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{conjecture}{Conjecture}
+\newtheorem{problem}{Problem}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\newtheorem*{example}{Example}
+
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\lo}{\lambda}
+\DeclareMathOperator{\vol}{vol}
+
+\title{\textbf{The Relative Grid:\\ actions on cellular shapes,\\ information loss and the number of actions}}
+\author{Muhammad Zafarov\thanks{Author of the system, its definitions and conjectures. The proofs and the text were prepared with the help of the AI assistant Claude (Anthropic). Text licensed under CC~BY~4.0; programs and Lean files under the MIT license. Full text (in Russian), verification programs and formalization: \url{https://github.com/abema2416-ops/Relative-Grid}.}}
+\date{Preprint, 27 November 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We study a system of actions on finite sets of cells of the lattice $\Z^n$: stretching or compressing part of an object along one axis by an integer factor ($\alpha$), deleting cells ($\sigma$), and gluing or ungluing touching cells ($\beta_\pm$). Each action is assigned an information loss — the binary logarithm of the number of zone contents mapped to the same result — and each object is assigned the number of actions $\ell(O)$ needed to build it from a single cell. We prove that every vanished cell costs at least one bit, and give the exact number of preimages for compressing a row; that cellular stretching coincides exactly, without rounding, with an affine stretch of space; and that in the plane stretches do not change the number of holes while a single gluing changes it by at most one. For ``reliefs'', computing the number of actions contains the NP-hard Normal Set Basis problem; we give bounds and exact special cases. We state a conjecture (the ``segment rule'') reducing the search over all zones to a search over line segments of the object; it was verified by exhaustive search on $4\,835\,965$ shapes in dimensions 2 and 3. The core of the system is formalized and checked in Lean~4.
+\end{abstract}
+
+\section{Introduction}
+
+Shapes cut into cells by a grid are standard objects of discrete geometry, digital topology and image processing. The operations usually studied on them are morphological (dilation, erosion) \cite{serra}, moves of individual cells \cite{akitaya}, or self-assembly \cite{soloveichik}. Here we propose a different set of elementary actions: part of an object is stretched or compressed along one axis by an integer factor, like an accordion, from its extreme layer. Such an action corresponds exactly to an affine stretch of space (Theorem~\ref{thm:affine}), but its parameters (zone, axis, direction, factor) are given in cells.
+
+We introduce two measures. The \emph{loss} of an action is the number of bits that cannot be recovered from the result and the parameters; this is logical irreversibility in the sense of Landauer \cite{landauer}, applied to actions on shapes. The \emph{number of actions} $\ell(O)$ is the length of a shortest chain building $O$ from one cell; it is an analogue of the descriptional complexity of a shape \cite{soloveichik} and of the assembly index \cite{assembly}, but for geometric actions. Separately from touching we introduce \emph{gluings}: two cells may touch without being connected. This makes the number of holes a function of the chosen gluings (Theorem~\ref{thm:holes}).
+
+Main results: a lower bound on loss and an exact formula for compressing a row (§\ref{sec:loss}); a bridge to continuous geometry (§\ref{sec:affine}); gluings and holes in the plane (§\ref{sec:holes}); bounds on the number of actions and NP-hardness of counting it for reliefs (§\ref{sec:count}); conjectures supported by exhaustive search, and open problems (§\ref{sec:conj}). §\ref{sec:formal} describes the Lean~4 formalization and programs.
+
+\section{Definitions}\label{sec:def}
+
+Let $e_1,\dots,e_n$ be the unit axis vectors, $|X|$ the size of a finite set $X$, $\|v\|_1=\sum|v_i|$, $\|v\|_\infty=\max|v_i|$.
+
+\begin{definition}[cell, object]
+A \emph{cell} is a point $c\in\Z^n$; it represents the cube $Q(c)=c+[0,1]^n$. An \emph{object} is a pair $(O,S)$, where $O\subset\Z^n$ is a finite nonempty set of cells and $S$ is a set of \emph{gluings}: unordered pairs of cells of $O$ that touch ($\|c-c'\|_\infty=1$). Touching without a gluing is called a \emph{crack}. Objects differing by a translation in $\Z^n$ are the same shape. A \emph{piece} is a connected component of the gluing graph.
+\end{definition}
+
+\begin{definition}[action $\alpha$]
+Parameters: a finite zone $Z\subset\Z^n$, an axis $i$, a direction $s\in\{\pm1\}$, a factor $f\in\{2,3,\dots\}$ and a kind (``stretch'' or ``compress''). Let $G=O\cap Z\neq\varnothing$ be the group. Put $a=\min\{s c_i: c\in G\}$ (the fixed side), $t(c)=s c_i-a\ge0$, and for an integer $p$ let $c[p]$ be the cell whose $i$-th coordinate is $sp$ and whose other coordinates equal those of $c$. Then
+\[
+\text{stretch: } \alpha(O)=(O\setminus G)\cup\{c[a+f\,t(c)+j]: c\in G,\ 0\le j<f\},
+\]
+\[
+\text{compress: } \alpha(O)=(O\setminus G)\cup\{c[a+\lfloor t(c)/f\rfloor]: c\in G\}.
+\]
+The action is admissible if the new cells do not meet $O\setminus G$ (rule P3). Under a stretch the image of a cell is $f$ consecutive cells glued to each other; a gluing $\{c,c'\}$ becomes gluings of all side-adjacent pairs of their images. A stretch or compression after which some glued cells would stop touching is inadmissible (rule P5): a gluing can be removed only by $\beta_-$ or together with a cell.
+\end{definition}
+
+\begin{definition}[$\sigma$, $\beta_\pm$]
+$\sigma_Z(O)=O\setminus Z$. The action $\beta_+$ adds to $S$ a nonempty set of touching but unglued pairs; $\beta_-$ removes a nonempty set of gluings. Cells do not change.
+\end{definition}
+
+\begin{definition}[loss, number of actions]
+An action $\varphi$ with fixed parameters applies to any content of its zone. Its \emph{loss} $\lo(\varphi,O)$ is $\log_2 N$, where $N$ is the number of objects $O'$ that agree with $O$ outside the zone, on which $\varphi$ is admissible and $\varphi(O')=\varphi(O)$. The loss of a chain is the sum of the losses of its steps. The \emph{number of actions} $\ell(O)$ is the least length of a chain of actions turning one cell into $O$ (up to translation).
+\end{definition}
+
+Stretching, $\beta_+$ and $\beta_-$ lose nothing: the original state is uniquely recovered from the result and the parameters (for stretching, because images of distinct cells are disjoint).
+
+\begin{definition}[thin objects]
+A $k$-cell ($0\le k\le n$) is a set $c+\sum_{j\in I}[0,1]e_j$, $|I|=k$. An object of rank $k<n$ is a finite set of $k$-cells. The action $\alpha$ on such an object is the action $\alpha$ of the ambient space applied to each of its cells as a point set: the map $y\mapsto a+f(y-a)$ along axis $i$. A cell extended along axis $i$ becomes $f$ cells of rank $k$; a cell that is ``thin'' along axis $i$ becomes one cell moved to the point $a+f(c_i-a)$. An object of rank $k>n$ in a space of rank $n$ can be represented only partially.
+\end{definition}
+
+Thin objects appear below only in examples; all theorems concern objects of full rank $k=n$.
+
+\section{Information loss}\label{sec:loss}
+
+\begin{lemma}\label{lem:bit}
+If an action decreases the number of cells by $d>0$, its loss is at least $d$ bits.
+\end{lemma}
+\begin{proof}
+A stretch removes no cells. For $\sigma_Z$ the result does not depend on the zone content, and there are at least $2^d$ contents. Let the action be a compression. Cells of the group in one row along axis $i$ split into blocks by the value $\lfloor t(c)/f\rfloor$; the cells of a block merge into one. If a nonempty block $B$ holds $m_B$ cells, then $d=\sum_B(m_B-1)$. Mark a cell $e\in G$ attaining $a$. Keep in each nonempty block any nonempty subset of its cells, with $e$ always kept. The fixed side and the numbers $t(c)$ of the remaining cells do not change and every block stays nonempty, so the result is the same and the action is admissible. There are at least $2^{m_{B_0}-1}\prod_{B\ne B_0}(2^{m_B}-1)\ge 2^{d}$ variants.
+\end{proof}
+
+\begin{theorem}\label{thm:loss}
+In any transformation of an object $A$ into an object $B$ the total loss is at least $|A|-|B|$ bits. If $A$ is face-connected and $B=A\setminus H\neq\varnothing$, $|H|=h$, then the least loss of $A\to B$ is exactly $h$ bits, and that of $B\to A$ is zero.
+\end{theorem}
+\begin{proof}
+The number of cells changes by $-d_1,-d_2,\dots$ with $\sum d_j=|A|-|B|$. By Lemma~\ref{lem:bit} the loss of a step is at least $\max(d_j,0)$, so the sum is at least $|A|-|B|$. The value $h$ is attained by $\sigma_H$ ($2^h$ preimages). Conversely, every face-connected component of $H$ shares a face with $B$, so the cells of $H$ can be ordered so that each shares a face with an already built cell; each is returned by stretching a neighbouring cell twofold towards it, with no loss.
+\end{proof}
+
+Thus removing $h$ cells costs $h$ bits, returning them costs nothing — an asymmetry absent from the number of actions, where both directions need comparable work.
+
+\begin{theorem}[exact loss of compressing a row]\label{thm:exact}
+Let the zone be a row segment with positions $0,\dots,L-1$, let $a$ be the least occupied position, and compress the row by $f$. Split positions $a,\dots,L-1$ into blocks by $\lfloor (p-a)/f\rfloor$; let $z_B$ be the number of zone positions in block $B$, and $B_0$ the anchor's block. Then the number of zone contents with the same result is
+\[
+N=2^{\,z_{B_0}-1}\prod_{B\ne B_0,\ B\text{ nonempty}}\bigl(2^{z_B}-1\bigr).
+\]
+\end{theorem}
+\begin{proof}
+The result is determined by the anchor $a$ and the set of nonempty blocks. A content $X$ gives the same result exactly when its leftmost cell is $a$ (otherwise the first cell of the result moves or a cell left of $a$ appears) and the same blocks are nonempty. In the anchor's block the cell $a$ is forced and the other $z_{B_0}-1$ positions are free; in any other nonempty block any nonempty subset works; empty blocks stay empty. The choices are independent.
+\end{proof}
+
+\begin{example}
+For a zone of length 20, $f=2$, with four vanished cells, the lemma gives $N\ge16$, the theorem $N=4374$. The formula agreed with exhaustive enumeration on $2872$ random rows of length up to 13 with $f=2,3,4$.
+\end{example}
+
+\section{Relation to affine stretches}\label{sec:affine}
+
+Let $F(O)=\bigcup_{c\in O}Q(c)$ be the shape represented by an object, and $y=sx_i$. The action $\alpha$ defines the map $T\colon y\mapsto a+f(y-a)$, other coordinates fixed.
+
+\begin{theorem}\label{thm:affine}
+\begin{enumerate}[label=\upshape(\alph*)]
+\item For a stretch, $F(\alpha(O))=F(O\setminus G)\cup T(F(G))$ exactly, with no rounding.
+\item For a compression, $\alpha(O)=(O\setminus G)\cup\{c: \vol(Q(c)\cap T^{-1}(F(G)))>0\}$: cellular compression is affine compression followed by the record ``a cell is occupied if it is touched''.
+\item Let shapes $K\subset F$ be bounded, and on grid levels $N_1\mid N_2\mid\cdots$ let records $O_N$ and groups $G_N$ converge to them in the volume of the symmetric difference, with anchors $a_N/N\to A$. Then the stretches $\alpha(O_N)$ converge in volume to $(F\setminus K)\cup T_A(K)$; likewise for any finite chain of stretches.
+\end{enumerate}
+\end{theorem}
+\begin{proof}
+(a) A cell at position $p=a+t$ goes to cells at positions $a+ft,\dots,a+ft+f-1$, which together occupy the segment $[a+ft,\,a+ft+f)=T([p,p+1))$ in $y$ and the same as the original cell along other axes. (b) $T^{-1}$ maps the cube of a cell onto a slab of thickness $1/f$ inside the cell at position $a+\lfloor t/f\rfloor$, and the slab has positive volume. (c) By (a) and $\vol((X\cup Y)\triangle(X'\cup Y'))\le\vol(X\triangle X')+\vol(Y\triangle Y')$; $T$ multiplies volumes by $f$, and the anchor shift $(f-1)(A-a_N/N)\to0$ is a small translation of a shape of finite volume.
+\end{proof}
+
+So the action $\alpha$ itself is a classical affine stretch; what is new is the way it is specified (zone and fixed side in cells), the loss accounting, and the counting of actions. The limit of chains containing compressions and $\sigma$ remains open (Problem~\ref{pr:limit}).
+
+\section{Gluings and holes in the plane}\label{sec:holes}
+
+Let $n=2$ with gluings along sides only. Build the 2-dimensional cell complex $K(O,S)$: take a square $Q(c)$ for each cell and identify common sides of glued pairs. The number of holes is $d=b_1(K)$; $q$ denotes the number of lattice points surrounded by a fully glued $2\times2$ square.
+
+\begin{theorem}\label{thm:holes}
+\begin{enumerate}[label=\upshape(\alph*)]
+\item $d=(\text{number of pieces})-|O|+|S|-q$.
+\item An admissible stretch does not change $d$.
+\item Adding one gluing changes $d$ by $+1$, $0$ or $-1$.
+\item Building an object from one cell by stretches and gluings needs at least $d$ glued pairs; if $q=0$, exactly $d$ pairs suffice.
+\end{enumerate}
+\end{theorem}
+\begin{proof}
+(a) Faces: $F=|O|$. Each side takes part in at most one gluing, so edges $E=4|O|-|S|$. Over a lattice point $p$ consider the graph $\Gamma(p)$: vertices are the squares with corner $p$ ($k(p)$ of them), edges the glued sides ending at $p$ ($s(p)$ of them). It is a subgraph of a 4-cycle, so it has $k(p)-s(p)+[\Gamma(p)\text{ is the whole cycle}]$ components; this is the number of vertices of $K$ over $p$. Summing ($\sum k=4|O|$, $\sum s=2|S|$) gives $V=4|O|-2|S|+q$ and $\chi(K)=|O|-|S|+q$. Each point of $K$ has a disc or half-disc neighbourhood (a fan of $j\le4$ sectors of $90^\circ$ or a full circle), so $K$ is a compact surface each component of which has nonempty boundary; hence $b_2=0$ and $b_1=b_0-\chi$.
+
+(b) Stretching a group $G$ by $f$ adds $(f-1)|G|$ cells and $(f-1)|G|+(f-1)r$ gluings, where $r$ is the number of gluings inside $G$ perpendicular to the axis; each such pair yields a $2\times f$ ladder with $f-1$ fully glued squares. The number of pieces does not change (P5). By (a) the change in $d$ is zero.
+
+(c) A gluing inside a piece increases $|S|$ by 1 and $q$ by $0$, $1$ or $2$; a gluing between two pieces decreases the number of pieces by 1 and does not change $q$.
+
+(d) The lower bound follows from (b), (c) and $d=0$ for one cell. For the upper bound grow the object along a spanning tree of the gluing graph (each new cell is a stretch of a neighbour, glued to it at once), then add the remaining $|S|-|O|+1$ gluings; for $q=0$ this is exactly $d$.
+\end{proof}
+
+Formula (a) agreed with a direct homology computation on $10\,550$ random stretches and $337$ gluings. Consequence: a hole can appear in two ways — by gluing (zero bits) or by punching (at least a bit per cell, Theorem~\ref{thm:loss}).
+
+\begin{remark}
+In dimension 3, for an object where everything touching is glued, the number of through-holes equals $b_0+P-\chi$, where $P$ is the number of cavities; this follows from the Euler–Poincaré formula and Alexander duality and is known in digital topology \cite{toriwaki,kaczynski}. The system arrives at this count naturally, but we do not claim it as new.
+\end{remark}
+
+\section{The number of actions}\label{sec:count}
+
+Let $m(O)$ be the number of axes along which the cells of $O$ have at least two distinct coordinate values.
+
+\begin{theorem}\label{thm:bounds}
+\begin{enumerate}[label=\upshape(\alph*)]
+\item For a face-connected object $O$, $m(O)\le\ell(O)\le|O|-1$, and the upper bound is attained by stretches alone, without loss. For a box with sides $\ge2$ along $k$ axes, $\ell=k$.
+\item For any object $O$, if $\sigma$ is allowed, $\ell(O)\le n+1$; the corresponding chain (a bounding box, then cutting out $\sigma_{P\setminus O}$) loses exactly $|P|-|O|$ bits, where $P$ is the smallest box containing $O$.
+\end{enumerate}
+\end{theorem}
+\begin{proof}
+(a) The set of values of the $i$-th coordinate can grow only under $\alpha$ along axis $i$; other actions do not enlarge it. The upper bound is growth cell by cell, as in the proof of Theorem~\ref{thm:loss}. A box is built by one stretch per axis. (b) The box by (a); $\sigma_Z$ has exactly $2^{|Z|}$ preimages.
+\end{proof}
+
+Part (b) expresses a trade of ``work'' for loss: any shape is built in $n+1$ actions, but at the price of a bit per cut-out cell.
+
+\paragraph{Reliefs.} Let $B\subset\Z^{n-1}$ be a base, $h\colon B\to\{1,2,\dots\}$ heights and $O=\{(b,j):0\le j<h(b)\}$. Consider the model in which every action stretches upward a zone consisting of whole columns by a factor $f$; then the height of a column is the product of the factors of the actions whose zones contained it. Let $H$ be the set of distinct heights greater than 1, $D=|H|$, and $R(H)$ the least number of factors such that every height is the product of some subset of them (each factor used at most once). Then $\ell(O)\le \ell(B)+R(H)\le\ell(B)+D$.
+
+\begin{theorem}\label{thm:np}
+If all heights are squarefree, $R(H)$ equals the least size of a normal set basis of the family of sets of prime divisors of the heights. Consequently computing $R$ is NP-hard.
+\end{theorem}
+\begin{proof}
+A normal set basis of a family $\mathcal F$ is a collection $\mathcal B$ such that every set in $\mathcal F$ is a union of pairwise disjoint sets from $\mathcal B$. A factor divisible by $p^2$ cannot occur in a factorization of a squarefree height; to the remaining factors $m$ associate their sets of prime divisors $P(m)$. If $h=m_1\cdots m_r$, the sets $P(m_j)$ are pairwise disjoint and their union is $P(h)$. Conversely, a normal set basis yields factors: the products of the primes of each set. The sizes agree. Any family of subsets of a finite set is encoded this way by assigning distinct primes to its elements. Normal Set Basis is NP-complete in the strong sense \cite{jiang}.
+\end{proof}
+
+\begin{theorem}\label{thm:R}
+\begin{enumerate}[label=\upshape(\alph*)]
+\item $\lceil\log_2(D+1)\rceil\le R(H)\le D$.
+\item If the heights are pairwise coprime, $R=D$.
+\item For $H=\{b,b^2,\dots,b^D\}$, $b\ge2$, $R=\lceil\log_2(D+1)\rceil$.
+\item There is a minimum set of factors all of whose elements lie in $C(H)=H\cup\mathcal D\cup\mathcal Q$, where $\mathcal D$ is the set of numbers $\ge2$ dividing at least two heights, and $\mathcal Q=\{h/d\ge2: h\in H,\ d\in\mathcal D,\ d\mid h\}$. Hence, for fixed $k$, the condition $R\le k$ can be checked in time polynomial in $D$ and the largest height.
+\end{enumerate}
+\end{theorem}
+\begin{proof}
+(a) $R$ factors give at most $2^R-1$ nonempty subsets, and distinct heights need distinct subsets. (b) A factor shared by two heights would divide both. (c) The factors $b,b^2,b^4,\dots,b^{2^{k-1}}$ give every $b^e$, $e\le 2^k-1$, via the binary expansion of $e$. (d) In a minimum set, a factor used by two heights lies in $\mathcal D$. Each height has at most one ``private'' factor (two could be replaced by their product). Replace the private factor of $h$ by $h/a$ if the factorization of $h$ contains a shared factor $a$, and by $h$ otherwise; the size does not grow. Enumerating sets of $k$ candidates, $|C(H)|=O(D^3h_{\max})$, is polynomial for fixed $k$.
+\end{proof}
+
+So the number of actions has exact ``easy'' cases (b), (c) and a ``hard middle''; for the full number $\ell$ (with partial zones, where heights are not only multiplied but also added) hardness is not proven.
+
+\section{Conjectures and open problems}\label{sec:conj}
+
+\paragraph{The segment rule.} For an axis $i$, a \emph{segment} of an object is a maximal run of consecutive cells along axis $i$. With an axis $i$ and a direction $s$ chosen, a \emph{segment step} is an action of one of two kinds:
+\begin{itemize}
+\item \emph{multiply}: take several segments from different lines with the same start (extreme cell on the side opposite to $s$) and stretch their union by $f\ge2$;
+\item \emph{extend}: take several segments from different lines with the same end and stretch their end cells by $a+1$ ($a\ge1$), i.e.\ extend each by $a$ cells.
+\end{itemize}
+Every step is a special case of $\alpha$. Let $\ell_{\alpha}(O)$ be the least number of stretches with arbitrary zones (under P3 and P5), and $\ell_{\mathrm{seg}}(O)$ the least number of segment steps.
+
+\begin{conjecture}[segment rule]\label{conj:seg}
+For every object $O$ obtainable from one cell by stretches, $\ell_{\mathrm{seg}}(O)=\ell_\alpha(O)$.
+\end{conjecture}
+
+The number of segments is linear in $|O|$, while there are $2^{|O|}$ zones, so the conjecture sharply reduces the search (though by Theorem~\ref{thm:np} it does not remove it). Verification — exhaustive search over all chains of stretches with arbitrary zones against chains of segment steps:
+
+\begin{center}
+\begin{tabular}{lccr}
+\toprule
+Box & Dimension & Chain length & Shapes (all agreed)\\
+\midrule
+$3\times6$ & 2 & $\le3$ & $8\,631$\\
+$4\times5$ & 2 & $\le3$ & $9\,031$\\
+$3\times4$ & 2 & $\le4$ & $817$\\
+$2\times3\times3$ & 3 & $\le3$ & $7\,196$\\
+$3\times3\times3$ & 3 & $\le3$ & $30\,893$\\
+$2\times2\times3$ & 3 & $\le4$ & $1\,670$\\
+$2\times2\times4$ & 3 & $\le4$ & $16\,732$\\
+$4\times4\times4$ & 3 & $\le3$ & $4\,760\,995$\\
+\midrule
+Total & & & $4\,835\,965$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Rule P5 is essential: if stretches may break gluings, $9870$ shapes are reachable in the $3\times6$ box versus $8632$ (counting the single cell), and the segment rule does not describe them. On reliefs a simpler variant (steps over faces) agreed with the exact minimum on all $859$ reliefs tested.
+
+\begin{conjecture}
+For planar reliefs, $\ell\ge1+\lceil\log_2 D'\rceil$, where $D'$ is the number of distinct heights in the relief. (Verified by exhaustive search on $1307$ reliefs.)
+\end{conjecture}
+
+\begin{conjecture}
+In Theorem~\ref{thm:holes}(d), exactly $d$ gluings suffice also when $q>0$.
+\end{conjecture}
+
+\begin{problem}
+Is computing $\ell(O)$ decidable in general? Zones and factors are unbounded, and intermediate objects may be arbitrarily large.
+\end{problem}
+
+\begin{problem}
+For which classes of height sets is $R(H)$ computable in polynomial time? Is there a constant-factor approximation algorithm?
+\end{problem}
+
+\begin{problem}\label{pr:limit}
+Do chains containing compressions and $\sigma$ have a limit under grid refinement (cf.\ Theorem~\ref{thm:affine}(c))?
+\end{problem}
+
+\begin{problem}
+Which statements about holes (Theorem~\ref{thm:holes}) carry over to thin objects, e.g.\ to bands of squares in $\Z^3$? (A Möbius band of lattice squares exists; the smallest one found has 7 squares.)
+\end{problem}
+
+\section{Formalization and programs}\label{sec:formal}
+
+The core of the system is written in Lean~4 \cite{lean} (version 4.37.0-rc1, no external libraries): 24 theorems relying only on the standard axioms (\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}), with no gaps (\texttt{sorry}). Machine-checked: the cell count under stretching and absence of overlaps; merging of cells under compression; the counting in Lemma~\ref{lem:bit}; parts (a)–(c) of Theorem~\ref{thm:R} and the replacement steps of (d); invertibility of the $90^\circ$ rotation; the cellular part of Theorem~\ref{thm:affine}(a,b); the vertex count over all 256 configurations and parts (b)–(d) of Theorem~\ref{thm:holes}. Not formalized: the topological part of Theorem~\ref{thm:holes}(a), limits, and NP-hardness (which relies on the published result \cite{jiang}).
+
+All exhaustive searches were done by programs in Python and C++; programs, data and Lean files are open (link in the footnote on the first page).
+
+\section{Related work}
+
+\emph{Logical irreversibility.} Loss as $\log_2$ of the number of preimages is standard \cite{landauer,frank}; what is new is its application to actions on shapes (Lemma~\ref{lem:bit}, Theorems~\ref{thm:loss}, \ref{thm:exact}).
+\emph{Mathematical morphology} \cite{serra}: stretching and compression resemble dilation and erosion, but those act by a structuring element on the whole image rather than stretching a chosen part from its edge; we found no bit-level loss accounting there.
+\emph{Affine maps}: Theorem~\ref{thm:affine} shows that $\alpha$ is a special affine stretch; the difference lies in how it is specified and accounted for.
+\emph{Digital topology and computational homology} \cite{kong,kaczynski,toriwaki}: formula (a) of Theorem~\ref{thm:holes} is a special case of Euler characteristic counting; what is new is that not all touching cells are glued.
+\emph{Reconfiguration and self-assembly of shapes} \cite{akitaya,soloveichik}: the closest analogues of the number of actions, but with different elementary operations.
+\emph{Assembly theory} \cite{assembly}: the assembly index is the least number of joining steps; the number of actions $\ell$ is an analogue for geometric stretches, while bit-level loss is not considered in assembly theory.
+
+\begin{thebibliography}{99}
+\bibitem{landauer} R.~Landauer. Irreversibility and heat generation in the computing process. \emph{IBM J. Res. Dev.} \textbf{5}(3), 183--191, 1961.
+\bibitem{frank} M.~P.~Frank. Physical foundations of Landauer's principle. arXiv:1901.10327, 2019.
+\bibitem{serra} J.~Serra. \emph{Image Analysis and Mathematical Morphology}. Academic Press, 1982.
+\bibitem{kong} T.~Y.~Kong, A.~Rosenfeld. Digital topology: introduction and survey. \emph{Comput. Vision Graph. Image Process.} \textbf{48}, 357--393, 1989.
+\bibitem{kaczynski} T.~Kaczynski, K.~Mischaikow, M.~Mrozek. \emph{Computational Homology}. Springer, 2004.
+\bibitem{toriwaki} J.~Toriwaki, H.~Yoshida. \emph{Fundamentals of Three-Dimensional Digital Image Processing}. Springer, 2009.
+\bibitem{jiang} T.~Jiang, B.~Ravikumar. Minimal NFA problems are hard. \emph{SIAM J. Comput.} \textbf{22}(6), 1117--1141, 1993.
+\bibitem{akitaya} H.~A.~Akitaya et al. Compacting squares: input-sensitive in-place reconfiguration of sliding squares. arXiv:2105.07997, 2021.
+\bibitem{soloveichik} D.~Soloveichik, E.~Winfree. Complexity of self-assembled shapes. \emph{SIAM J. Comput.} \textbf{36}(6), 1544--1569, 2007.
+\bibitem{assembly} A.~Sharma, D.~Czégel, M.~Lachmann, C.~P.~Kempes, S.~I.~Walker, L.~Cronin. Assembly theory explains and quantifies selection and evolution. \emph{Nature} \textbf{622}, 321--328, 2023.
+\bibitem{lean} L.~de~Moura, S.~Ullrich. The Lean 4 theorem prover and programming language. In: \emph{CADE-28}, LNCS 12699, 625--635, 2021.
+\end{thebibliography}
+
+\end{document}
