@@ -51,7 +51,7 @@ Main results: a lower bound on loss and an exact formula for compressing a row (
 Let $e_1,\dots,e_n$ be the unit axis vectors, $|X|$ the size of a finite set $X$, $\|v\|_1=\sum|v_i|$, $\|v\|_\infty=\max|v_i|$.
 
 \begin{definition}[cell, object]
-A \emph{cell} is a point $c\in\Z^n$; it represents the cube $Q(c)=c+[0,1]^n$. An \emph{object} is a pair $(O,S)$, where $O\subset\Z^n$ is a finite nonempty set of cells and $S$ is a set of \emph{gluings}: unordered pairs of cells of $O$ that touch ($\|c-c'\|_\infty=1$). Touching without a gluing is called a \emph{crack}. Objects differing by a translation in $\Z^n$ are the same shape. A \emph{piece} is a connected component of the gluing graph.
+A \emph{cell} is a point $c\in\Z^n$; it represents the cube $Q(c)=c+[0,1]^n$. An \emph{object} is a pair $(O,S)$, where $O\subset\Z^n$ is a finite nonempty set of cells and $S$ is a set of \emph{gluings}: unordered pairs of cells of $O$ that are side neighbours ($\|c-c'\|_1=1$). Side neighbours without a gluing form a \emph{crack}. (Gluings along edges or vertices belong to an extension of the system and are not considered here.) Objects differing by a translation in $\Z^n$ are the same shape. A \emph{piece} is a connected component of the gluing graph.
 \end{definition}
 
 \begin{definition}[action $\alpha$]
@@ -62,20 +62,20 @@ Parameters: a finite zone $Z\subset\Z^n$, an axis $i$, a direction $s\in\{\pm1\}
 \[
 \text{compress: } \alpha(O)=(O\setminus G)\cup\{c[a+\lfloor t(c)/f\rfloor]: c\in G\}.
 \]
-The action is admissible if the new cells do not meet $O\setminus G$ (rule P3). There is no parameter allowing overlaps: an overlap means the action is rejected. The \emph{dimension of a gluing} is the dimension of $Q(c)\cap Q(c')$. Under a stretch the $f$ image cells of one cell are glued consecutively, and a gluing $\{c,c'\}$ becomes gluings of all image pairs $\{x,x'\}$ for which $Q(x)\cap Q(x')\cap T(Q(c)\cap Q(c'))$ has the same dimension ($T$ is the affine stretch, §\ref{sec:affine}); under a compression it becomes the gluing of the images of $c$ and $c'$, and the gluing disappears when the cells merge. An action after which some gluing would not survive with the same dimension is inadmissible (rule P5): a gluing can be removed only by $\beta_-$ or together with a cell. For side gluings this means glued cells cannot stop sharing a side.
+The action is admissible if the new cells do not meet $O\setminus G$ (rule P3). There is no parameter allowing overlaps: an overlap means the action is rejected. Under a stretch the $f$ image cells of one cell are glued consecutively, and a gluing $\{c,c'\}$ becomes gluings of all side-adjacent pairs of images; under a compression it becomes the gluing of the images, and disappears when the cells merge. An action after which glued cells would stop being side neighbours is inadmissible (rule P5): a gluing can be removed only by $\beta_-$ or together with a cell.
 \end{definition}
 
 \begin{definition}[$\sigma$, $\beta_\pm$]
-$\sigma_Z(O)=O\setminus Z$. The action $\beta_+$ adds to $S$ a nonempty set of touching but unglued pairs; $\beta_-$ removes a nonempty set of gluings. Cells do not change.
+$\sigma_Z(O)=O\setminus Z$. The action $\beta_+$ adds to $S$ a nonempty set of unglued side-neighbour pairs; $\beta_-$ removes a nonempty set of gluings. Cells do not change.
 \end{definition}
 
 \begin{definition}[loss, number of actions]
-An action $\varphi$ with fixed parameters applies to any content of its zone. Its \emph{loss} $\lo(\varphi,O)$ is $\log_2 N$, where $N$ is the number of objects $O'$ that agree with $O$ outside the zone, on which $\varphi$ is admissible and $\varphi(O')=\varphi(O)$. The loss of a chain is the sum of the losses of its steps. Loss is counted on cells (gluings are not counted). A chain starts from one cell without gluings. The \emph{number of actions of a cell shape} $\ell(O)$ is the least length of a chain after which the cell set equals $O$ (any gluings); the \emph{number of actions of an object} $\ell(O,S)$ is the same with gluings exactly $S$. Appending at most one $\beta_-$ and one $\beta_+$ gives $\ell(O)\le\ell(O,S)\le\ell(O)+2$. The number of pairs glued by $\beta_+$ (the \emph{gluing cost}) is counted separately and is used only in §\ref{sec:holes}.
+An action $\varphi$ with fixed parameters applies to any content of its zone. Its \emph{loss} $\lo(\varphi,O)$ is $\log_2 N$, where $N$ is the number of objects $O'$ that agree with $O$ outside the zone, on which $\varphi$ is admissible and $\varphi(O')=\varphi(O)$. The loss of a chain is the sum of the losses of its steps. Loss is counted on cells (gluings are not counted). A chain starts from one cell without gluings. The \emph{number of actions of a cell shape} $\ell_{\mathrm{cell}}(O)$ is the least length of a chain after which the cell set equals $O$ (any gluings); the \emph{number of actions of an object} $\ell(O,S)$ is the same with gluings exactly $S$. Appending at most one $\beta_-$ and one $\beta_+$ gives $\ell_{\mathrm{cell}}(O)\le\ell(O,S)\le\ell_{\mathrm{cell}}(O)+2$. Below, for brevity, $\ell(O)=\ell_{\mathrm{cell}}(O)$. The number of pairs glued by $\beta_+$ (the \emph{gluing cost}) is counted separately and is used only in §\ref{sec:holes}.
 
 \emph{Translation and zones.} Shapes are taken up to translation, while zones are given in the coordinates of a representative; when the object is shifted by $v$, the zone is shifted with it: $\alpha_{Z+v}(O+v)=\alpha_Z(O)+v$, $\sigma_{Z+v}(O+v)=\sigma_Z(O)+v$ (checked in Lean). Hence $\ell$ and loss do not depend on the representative or the starting cell.
 \end{definition}
 
-Stretching, $\beta_+$ and $\beta_-$ lose nothing: the original state is uniquely recovered from the result and the parameters (for stretching, because images of distinct cells are disjoint).
+Stretching, $\beta_+$ and $\beta_-$ lose nothing; in particular $\lambda(\beta_\pm)=0$ both on cells and on the pair $(O,S)$: the original state is uniquely recovered from the result and the parameters (for stretching, because images of distinct cells are disjoint).
 
 \begin{definition}[thin objects]
 A $k$-cell ($0\le k\le n$) is a set $c+\sum_{j\in I}[0,1]e_j$, $|I|=k$. An object of rank $k<n$ is a finite set of $k$-cells. The action $\alpha$ on such an object is the action $\alpha$ of the ambient space applied to each of its cells as a point set: the map $y\mapsto a+f(y-a)$ along axis $i$. A cell extended along axis $i$ becomes $f$ cells of rank $k$; a cell that is ``thin'' along axis $i$ becomes one cell moved to the point $a+f(c_i-a)$. An object of rank $k>n$ in a space of rank $n$ can be represented only partially.
