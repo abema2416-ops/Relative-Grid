@@ -319,4 +319,32 @@ theorem stretch_lossless (O O' Z : Obj n) (i : Fin n) (s : Int) (hs : Dir s) (f 
         (fun y => (heq y).symm) x h hz⟩
   · exact (hout x hz).symm
 
+/-! ## Вычислимость ℓ_α: в цепочке растяжений все промежуточные фигуры лежат в рамке итоговой -/
+
+/-- Цепочка из одних растяжений (с правильной закреплённой стороной). -/
+inductive SChain : Obj n → Obj n → Nat → Prop
+  | nil (O : Obj n) : SChain O O 0
+  | cons {O O₂ : Obj n} {k : Nat} (Z : Obj n) (i : Fin n) (s : Int) (f : Nat) (a : Int) :
+      Dir s → 2 ≤ f → Anchor O Z i s a → SChain (stretch O Z i s f a) O₂ k → SChain O O₂ (k + 1)
+
+/-- Каждая клетка любой промежуточной фигуры по каждой оси лежит между клетками итоговой фигуры. -/
+theorem schain_frame {O O' : Obj n} {k : Nat} (h : SChain O O' k) :
+    ∀ y, O y → ∀ m, ∃ x x', O' x ∧ O' x' ∧ x m ≤ y m ∧ y m ≤ x' m := by
+  induction h with
+  | nil O => intro y hy m; exact ⟨y, y, hy, hy, Int.le_refl _, Int.le_refl _⟩
+  | cons Z i s f a hs hf ha _ ih =>
+    intro y hy m
+    obtain ⟨u, u', hu, hu', h1, h2⟩ := stretch_frame _ Z i s hs f hf a ha y hy m
+    obtain ⟨x, _, hx, _, hx1, _⟩ := ih u hu m
+    obtain ⟨_, x', _, hx', _, hx2⟩ := ih u' hu' m
+    exact ⟨x, x', hx, hx', Int.le_trans hx1 h1, Int.le_trans h2 hx2⟩
+
+/-- Коэффициент растяжения в цепочке не больше ширины итоговой рамки: образ клетки — f клеток подряд,
+    и все они лежат в рамке. Формально: две клетки образа (j = 0 и j = f − 1) обе в результате. -/
+theorem stretch_image_ends (O Z : Obj n) (i : Fin n) (s : Int) (f : Nat) (hf : 2 ≤ f) (a : Int)
+    (c : Pt n) (hc : O c) (hz : Z c) :
+    stretch O Z i s f a (upd c i (s * (a + f * (s * c i - a) + ((0 : Nat) : Int)))) ∧
+    stretch O Z i s f a (upd c i (s * (a + f * (s * c i - a) + ((f - 1 : Nat) : Int)))) :=
+  ⟨Or.inr ⟨c, hc, hz, 0, by omega, rfl⟩, Or.inr ⟨c, hc, hz, f - 1, by omega, rfl⟩⟩
+
 end Setka.Core

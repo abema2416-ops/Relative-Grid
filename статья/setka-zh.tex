@@ -135,7 +135,16 @@ N=2^{\,z_{B_0}-1}\prod_{B\ne B_0,\ B\text{ 非空}}\bigl(2^{z_B}-1\bigr).
 (a) 位置为 $p=a+t$ 的格点变为位置 $a+ft,\dots,a+ft+f-1$ 的格点，它们在 $y$ 方向合起来占据 $[a+ft,\,a+ft+f)=T([p,p+1))$，在其他轴上与原格点相同。(b) $T^{-1}$ 把格点立方体映为位置 $a+\lfloor t/f\rfloor$ 的格点内一层厚 $1/f$ 的薄片，其体积为正。(c) 由 (a) 及 $\vol((X\cup Y)\triangle(X'\cup Y'))\le\vol(X\triangle X')+\vol(Y\triangle Y')$；$T$ 使体积乘 $f$，锚点偏移 $(f-1)(A-a_N/N)\to0$ 是有限体积图形的微小平移。
 \end{proof}
 
-因此操作 $\alpha$ 本身是经典的仿射拉伸；新的是它的给出方式（以格点表示区域和固定端）、损失的计量以及操作次数的计数。含压缩和 $\sigma$ 的操作链的极限仍是公开问题（问题~\ref{pr:limit}）。
+因此操作 $\alpha$ 本身是经典的仿射拉伸；新的是它的给出方式（以格点表示区域和固定端）、损失的计量以及操作次数的计数。压缩和 $\sigma$ 也可取极限：
+
+\begin{theorem}\label{thm:limit}
+在 (c) 的条件下，若 $K$ 是 Jordan 可测的，则压缩 $\alpha(O_N)$ 按体积收敛于 $(F\setminus K)\cup T_A^{-1}(K)$；当 $F(O_N\cap Z_N)\to W$ 时 $\sigma_{Z_N}(O_N)$ 收敛于 $F\setminus W$。对由拉伸、压缩和 $\sigma$ 组成的任意有限链亦然，只要所有被压缩组的极限 Jordan 可测。
+\end{theorem}
+\begin{proof}
+设 $B(X)$ 为以锚点 $a_N$ 压缩格点集 $X$ 的结果，$K_N$ 为 $K$ 的记录。$B(G_N)\triangle B(K_N)$ 中的每个块含有 $G_N\triangle K_N$ 中的一个格点，不同块对应不同格点，故 $|B(G_N)\triangle B(K_N)|\le|G_N\triangle K_N|=o(N^n)$。由 (b)，$F(B(K_N))\supseteq T^{-1}(F(K_N))$，多出的体积只来自不完整的块；不完整的块含有相邻的一个属于 $K_N$、一个不属于 $K_N$ 的格点，它们的并触及 $\partial K$，这样的格点只有 $o(N^n)$ 个。最后 $\vol(T^{-1}(F(K_N))\triangle T^{-1}(K))=\vol(F(K_N)\triangle K)/f\to0$，锚点偏移很小。对 $\sigma$ 和并集用对称差不等式。
+\end{proof}
+
+无限链仍是公开问题（问题~\ref{pr:limit}）。
 
 \section{平面上的粘合与洞}\label{sec:holes}
 
@@ -150,7 +159,7 @@ N=2^{\,z_{B_0}-1}\prod_{B\ne B_0,\ B\text{ 非空}}\bigl(2^{z_B}-1\bigr).
 \end{enumerate}
 \end{theorem}
 \begin{proof}
-(a) 面数 $F=|O|$。每条边至多参与一个粘合，故边数 $E=4|O|-|S|$。在格点 $p$ 处考虑图 $\Gamma(p)$：顶点为以 $p$ 为角的正方形（$k(p)$ 个），边为以 $p$ 为端点的粘合边（$s(p)$ 个）。它是 4-圈的子图，故有 $k(p)-s(p)+[\Gamma(p)\text{ 为整个圈}]$ 个分支，这也是 $K$ 在 $p$ 上方的顶点数。求和（$\sum k=4|O|$，$\sum s=2|S|$）得 $V=4|O|-2|S|+q$，$\chi(K)=|O|-|S|+q$。$K$ 的每点有圆盘或半圆盘邻域（$j\le4$ 个 $90^\circ$ 扇形或整圆），故 $K$ 是紧曲面，每个分支边界非空；于是 $b_2=0$，$b_1=b_0-\chi$。
+(a) 面数 $F=|O|$。每条边至多参与一个粘合，故边数 $E=4|O|-|S|$。在格点 $p$ 处考虑图 $\Gamma(p)$：顶点为以 $p$ 为角的正方形（$k(p)$ 个），边为以 $p$ 为端点的粘合边（$s(p)$ 个）。它是 4-圈的子图，故有 $k(p)-s(p)+[\Gamma(p)\text{ 为整个圈}]$ 个分支，这也是 $K$ 在 $p$ 上方的顶点数。求和（$\sum k=4|O|$，$\sum s=2|S|$）得 $V=4|O|-2|S|+q$，$\chi(K)=|O|-|S|+q$。由秩–零化度定理 $\chi=b_0-b_1+b_2$（$\mathbb Q$ 上的同调）。不用拓扑证明 $b_2=0$：设 $z=\sum a_cQ(c)$ 是非零 2-闭链，取 $a_c\ne0$ 且 $(c_1,c_2)$ 字典序最大的 $c$。$Q(c)$ 的右边只与 $Q(c+e_1)$ 共有，而后者系数为 $0$，故该边在 $\partial z$ 中系数为 $\pm a_c\ne0$，矛盾。$K$ 的分支就是块，所以 $b_1=b_0-\chi$。
 
 (b) 把组 $G$ 拉伸 $f$ 倍，格点增加 $(f-1)|G|$，粘合增加 $(f-1)|G|+(f-1)r$，其中 $r$ 是 $G$ 内垂直于该轴的粘合数；每个这样的对形成一个 $2\times f$ 的梯子，含 $f-1$ 个完全粘合的正方形。块数不变（P5）。由 (a)，$d$ 的变化为零。
 
@@ -211,11 +220,13 @@ N=2^{\,z_{B_0}-1}\prod_{B\ne B_0,\ B\text{ 非空}}\bigl(2^{z_B}-1\bigr).
 \item \emph{相乘}：取来自不同直线、起点相同（在与 $s$ 相反一侧的端格点）的若干线段，把它们的并拉伸 $f\ge2$ 倍；
 \item \emph{延长}：取来自不同直线、终点相同的若干线段，把它们的端格点拉伸 $a+1$ 倍（$a\ge1$），即每段延长 $a$ 个格点。
 \end{itemize}
-每一步都是 $\alpha$ 的特例。记 $\ell_{\alpha}(O)$ 为用任意区域的拉伸（满足 P3 与 P5）的最少次数，$\ell_{\mathrm{seg}}(O)$ 为线段步的最少次数。
+每一步都是 $\alpha$ 的特例，因此总有 $\ell_{\mathrm{seg}}\ge\ell_\alpha$。记 $\ell_{\alpha}(O)$ 为用任意区域的拉伸（满足 P3 与 P5）的最少次数，$\ell_{\mathrm{seg}}(O)$ 为线段步的最少次数。
 
 \begin{conjecture}[线段规则]\label{conj:seg}
 对每个可由单个格点经拉伸得到的物体 $O$，$\ell_{\mathrm{seg}}(O)=\ell_\alpha(O)$。
 \end{conjecture}
+
+当 $\ell_\alpha(O)\le2$ 时猜想在任意维数成立：一步之后物体是一行；第二步若垂直于该行，则拉伸起点相同的单个格点（即“相乘”步）；若沿该行，规则 P3 迫使其组为从锚点起的整个行尾，结果仍是一行。此外，拉伸链的所有中间形状都在最终形状的外接框内（外接框不缩小，已在 Lean 中检验），因此下表中的穷举是精确的。
 
 线段的个数与 $|O|$ 成线性，而区域有 $2^{|O|}$ 个，因此该猜想大大缩小了搜索（但由定理~\ref{thm:np} 并不能消除搜索）。验证——对任意区域的所有拉伸链与线段步链做穷举比较：
 
@@ -241,15 +252,22 @@ $4\times4\times4$ & 3 & $\le3$ & $4\,760\,995$\\
 规则 P5 是关键：若允许拉伸撕开粘合，在 $3\times6$ 范围内可达 $9870$ 个形状，而非 $8632$ 个（含单个格点），线段规则不能描述它们。对地形，更简单的变体（按面的步）在全部 $859$ 个受测地形上与精确最小值一致。
 
 \begin{conjecture}
-对平面地形，$\ell\ge1+\lceil\log_2 D'\rceil$，其中 $D'$ 为地形中不同高度的个数。（已在 $1307$ 个地形上穷举验证。）
+对平面地形，$\ell\ge1+\lceil\log_2 D'\rceil$，其中 $D'$ 为地形中不同高度的个数。（已在 $1307$ 个地形上穷举验证；在先建底面、再拉伸整根柱子的模型中，它由定理~\ref{thm:R}(a) 得出。）
 \end{conjecture}
 
 \begin{conjecture}
 在定理~\ref{thm:holes}(d) 中，当 $q>0$ 时恰好 $d$ 个粘合也够。
 \end{conjecture}
 
+\begin{theorem}\label{thm:dec}
+操作次数 $\ell_\alpha$（只用拉伸，或拉伸加粘合）是可计算的。
+\end{theorem}
+\begin{proof}
+拉伸下外接框不缩小，格点数增加，倍数不超过最终外接框的边长。因此所有中间状态属于一个有限集（外接框的子集及其粘合），广度优先搜索必然终止。
+\end{proof}
+
 \begin{problem}
-一般情形下 $\ell(O)$ 的计算是否可判定？区域和倍数不受限制，中间物体可以任意大。
+允许压缩和 $\sigma$ 时 $\ell$ 是否可计算？此时中间物体可能超出外接框。
 \end{problem}
 
 \begin{problem}
@@ -257,7 +275,7 @@ $4\times4\times4$ & 3 & $\le3$ & $4\,760\,995$\\
 \end{problem}
 
 \begin{problem}\label{pr:limit}
-含压缩和 $\sigma$ 的操作链在网格加细时是否有极限（参见定理~\ref{thm:affine}(c)）？
+无限链，或组的极限不是 Jordan 可测的链，是否有极限（参见定理~\ref{thm:limit}）？
 \end{problem}
 
 \begin{problem}
@@ -266,7 +284,7 @@ $4\times4\times4$ & 3 & $\le3$ & $4\,760\,995$\\
 
 \section{形式化与程序}\label{sec:formal}
 
-系统核心用 Lean~4 \cite{lean} 写成（版本 4.37.0-rc1，无外部库）：点、物体、操作 $\alpha$、$\sigma$、$\beta$、规则 P3 与操作链的定义，以及 36 个定理，只依赖标准公理（\texttt{propext}、\texttt{Classical.choice}、\texttt{Quot.sound}），没有缺口（\texttt{sorry}）。机器检验的内容包括：定理~\ref{thm:bounds}(a) 的下界 $m(O)\le\ell(O)$（对整个核心成立）；拉伸无损失；$\sigma$ 的原像；引理~\ref{lem:bit} 的结构部分；定理~\ref{thm:loss} 的生长步骤；拉伸下外接框不缩小（因此第~\ref{sec:conj} 节中有界范围内的穷举是精确的）；定理~\ref{thm:np} 中归约的关键步骤；拉伸下的格点计数与无重叠；压缩下格点的合并；引理~\ref{lem:bit} 中的计数；定理~\ref{thm:R} 的 (a)–(c) 及 (d) 的替换步骤；$90^\circ$ 旋转的可逆性；定理~\ref{thm:affine}(a,b) 的格点部分；全部 256 种构型的顶点计数及定理~\ref{thm:holes} 的 (b)–(d)。未形式化的有：定理~\ref{thm:holes}(a) 的拓扑部分、极限以及 NP 困难性（后者依赖已发表的结果 \cite{jiang}）。
+系统核心用 Lean~4 \cite{lean} 写成（版本 4.37.0-rc1，无外部库）：点、物体、操作 $\alpha$、$\sigma$、$\beta$、规则 P3 与操作链的定义，以及 38 个定理，只依赖标准公理（\texttt{propext}、\texttt{Classical.choice}、\texttt{Quot.sound}），没有缺口（\texttt{sorry}）。机器检验的内容包括：定理~\ref{thm:bounds}(a) 的下界 $m(O)\le\ell(O)$（对整个核心成立）；拉伸无损失；$\sigma$ 的原像；引理~\ref{lem:bit} 的结构部分；定理~\ref{thm:loss} 的生长步骤；拉伸下外接框不缩小（因此第~\ref{sec:conj} 节中有界范围内的穷举是精确的）；定理~\ref{thm:np} 中归约的关键步骤；拉伸下的格点计数与无重叠；压缩下格点的合并；引理~\ref{lem:bit} 中的计数；定理~\ref{thm:R} 的 (a)–(c) 及 (d) 的替换步骤；$90^\circ$ 旋转的可逆性；定理~\ref{thm:affine}(a,b) 的格点部分；全部 256 种构型的顶点计数及定理~\ref{thm:holes} 的 (b)–(d)。未形式化的有：定理~\ref{thm:holes}(a) 的拓扑部分、极限以及 NP 困难性（后者依赖已发表的结果 \cite{jiang}）。
 
 所有穷举都由 Python 和 C++ 程序完成；程序、数据和 Lean 文件均已公开（见首页脚注中的链接）。
 

@@ -36,3 +36,5 @@ open Setka
 #print axioms Setka.Core.sqfree_dvd
 #print axioms Setka.Core.sqfree_parts_disjoint
 #print axioms Setka.Core.stretch_lossless
+#print axioms Setka.Core.schain_frame
+#print axioms Setka.Core.stretch_image_ends

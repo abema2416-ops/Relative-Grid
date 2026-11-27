@@ -128,7 +128,16 @@ Let $F(O)=\bigcup_{c\in O}Q(c)$ be the shape represented by an object, and $y=sx
 (a) A cell at position $p=a+t$ goes to cells at positions $a+ft,\dots,a+ft+f-1$, which together occupy the segment $[a+ft,\,a+ft+f)=T([p,p+1))$ in $y$ and the same as the original cell along other axes. (b) $T^{-1}$ maps the cube of a cell onto a slab of thickness $1/f$ inside the cell at position $a+\lfloor t/f\rfloor$, and the slab has positive volume. (c) By (a) and $\vol((X\cup Y)\triangle(X'\cup Y'))\le\vol(X\triangle X')+\vol(Y\triangle Y')$; $T$ multiplies volumes by $f$, and the anchor shift $(f-1)(A-a_N/N)\to0$ is a small translation of a shape of finite volume.
 \end{proof}
 
-So the action $\alpha$ itself is a classical affine stretch; what is new is the way it is specified (zone and fixed side in cells), the loss accounting, and the counting of actions. The limit of chains containing compressions and $\sigma$ remains open (Problem~\ref{pr:limit}).
+So the action $\alpha$ itself is a classical affine stretch; what is new is the way it is specified (zone and fixed side in cells), the loss accounting, and the counting of actions. Compressions and $\sigma$ also pass to the limit:
+
+\begin{theorem}\label{thm:limit}
+Under the assumptions of (c), if $K$ is Jordan measurable, the compressions $\alpha(O_N)$ converge in volume to $(F\setminus K)\cup T_A^{-1}(K)$, and $\sigma_{Z_N}(O_N)$ with $F(O_N\cap Z_N)\to W$ converges to $F\setminus W$. The same holds for any finite chain of stretches, compressions and $\sigma$, provided the limits of all compressed groups are Jordan measurable.
+\end{theorem}
+\begin{proof}
+Let $B(X)$ be the result of compressing a cell set $X$ with anchor $a_N$, and $K_N$ the record of $K$. A block in $B(G_N)\triangle B(K_N)$ contains a cell of $G_N\triangle K_N$, distinct blocks distinct cells, so $|B(G_N)\triangle B(K_N)|\le|G_N\triangle K_N|=o(N^n)$. Next, $F(B(K_N))\supseteq T^{-1}(F(K_N))$ by (b), and excess volume comes only from incomplete blocks; an incomplete block contains adjacent cells in and out of $K_N$, whose union meets $\partial K$, and there are $o(N^n)$ such cells. Finally $\vol(T^{-1}(F(K_N))\triangle T^{-1}(K))=\vol(F(K_N)\triangle K)/f\to0$ and the anchor shift is small. For $\sigma$ and unions use the symmetric-difference inequality.
+\end{proof}
+
+Infinite chains remain open (Problem~\ref{pr:limit}).
 
 \section{Gluings and holes in the plane}\label{sec:holes}
 
@@ -143,7 +152,7 @@ Let $n=2$ with gluings along sides only. Build the 2-dimensional cell complex $K
 \end{enumerate}
 \end{theorem}
 \begin{proof}
-(a) Faces: $F=|O|$. Each side takes part in at most one gluing, so edges $E=4|O|-|S|$. Over a lattice point $p$ consider the graph $\Gamma(p)$: vertices are the squares with corner $p$ ($k(p)$ of them), edges the glued sides ending at $p$ ($s(p)$ of them). It is a subgraph of a 4-cycle, so it has $k(p)-s(p)+[\Gamma(p)\text{ is the whole cycle}]$ components; this is the number of vertices of $K$ over $p$. Summing ($\sum k=4|O|$, $\sum s=2|S|$) gives $V=4|O|-2|S|+q$ and $\chi(K)=|O|-|S|+q$. Each point of $K$ has a disc or half-disc neighbourhood (a fan of $j\le4$ sectors of $90^\circ$ or a full circle), so $K$ is a compact surface each component of which has nonempty boundary; hence $b_2=0$ and $b_1=b_0-\chi$.
+(a) Faces: $F=|O|$. Each side takes part in at most one gluing, so edges $E=4|O|-|S|$. Over a lattice point $p$ consider the graph $\Gamma(p)$: vertices are the squares with corner $p$ ($k(p)$ of them), edges the glued sides ending at $p$ ($s(p)$ of them). It is a subgraph of a 4-cycle, so it has $k(p)-s(p)+[\Gamma(p)\text{ is the whole cycle}]$ components; this is the number of vertices of $K$ over $p$. Summing ($\sum k=4|O|$, $\sum s=2|S|$) gives $V=4|O|-2|S|+q$ and $\chi(K)=|O|-|S|+q$. By rank–nullity $\chi=b_0-b_1+b_2$ (homology over $\mathbb Q$). We show $b_2=0$ without topology: let $z=\sum a_cQ(c)$ be a nonzero 2-cycle and take $c$ with $a_c\ne0$ and lexicographically largest $(c_1,c_2)$. The right side of $Q(c)$ is shared only with $Q(c+e_1)$, whose coefficient is $0$, so it appears in $\partial z$ with coefficient $\pm a_c\ne0$, a contradiction. The components of $K$ are the pieces, so $b_1=b_0-\chi$.
 
 (b) Stretching a group $G$ by $f$ adds $(f-1)|G|$ cells and $(f-1)|G|+(f-1)r$ gluings, where $r$ is the number of gluings inside $G$ perpendicular to the axis; each such pair yields a $2\times f$ ladder with $f-1$ fully glued squares. The number of pieces does not change (P5). By (a) the change in $d$ is zero.
 
@@ -204,11 +213,13 @@ So the number of actions has exact ``easy'' cases (b), (c) and a ``hard middle''
 \item \emph{multiply}: take several segments from different lines with the same start (extreme cell on the side opposite to $s$) and stretch their union by $f\ge2$;
 \item \emph{extend}: take several segments from different lines with the same end and stretch their end cells by $a+1$ ($a\ge1$), i.e.\ extend each by $a$ cells.
 \end{itemize}
-Every step is a special case of $\alpha$. Let $\ell_{\alpha}(O)$ be the least number of stretches with arbitrary zones (under P3 and P5), and $\ell_{\mathrm{seg}}(O)$ the least number of segment steps.
+Every step is a special case of $\alpha$, so always $\ell_{\mathrm{seg}}\ge\ell_\alpha$. Let $\ell_{\alpha}(O)$ be the least number of stretches with arbitrary zones (under P3 and P5), and $\ell_{\mathrm{seg}}(O)$ the least number of segment steps.
 
 \begin{conjecture}[segment rule]\label{conj:seg}
 For every object $O$ obtainable from one cell by stretches, $\ell_{\mathrm{seg}}(O)=\ell_\alpha(O)$.
 \end{conjecture}
+
+The conjecture holds when $\ell_\alpha(O)\le2$, in any dimension: after one step the object is a row; a second step across the row stretches single cells with a common start (a ``multiply'' step), while along the row rule P3 forces its group to be the whole tail of the row from the anchor, and the result is again a row. Moreover, all intermediate shapes of a chain of stretches stay inside the bounding box of the final shape (the box never shrinks, checked in Lean), so the searches in the table below are exact.
 
 The number of segments is linear in $|O|$, while there are $2^{|O|}$ zones, so the conjecture sharply reduces the search (though by Theorem~\ref{thm:np} it does not remove it). Verification — exhaustive search over all chains of stretches with arbitrary zones against chains of segment steps:
 
@@ -234,15 +245,22 @@ Total & & & $4\,835\,965$\\
 Rule P5 is essential: if stretches may break gluings, $9870$ shapes are reachable in the $3\times6$ box versus $8632$ (counting the single cell), and the segment rule does not describe them. On reliefs a simpler variant (steps over faces) agreed with the exact minimum on all $859$ reliefs tested.
 
 \begin{conjecture}
-For planar reliefs, $\ell\ge1+\lceil\log_2 D'\rceil$, where $D'$ is the number of distinct heights in the relief. (Verified by exhaustive search on $1307$ reliefs.)
+For planar reliefs, $\ell\ge1+\lceil\log_2 D'\rceil$, where $D'$ is the number of distinct heights in the relief. (Verified by exhaustive search on $1307$ reliefs; in the model where the base is built first and then whole columns are stretched, it follows from Theorem~\ref{thm:R}(a).)
 \end{conjecture}
 
 \begin{conjecture}
 In Theorem~\ref{thm:holes}(d), exactly $d$ gluings suffice also when $q>0$.
 \end{conjecture}
 
+\begin{theorem}\label{thm:dec}
+The number of actions $\ell_\alpha$ (stretches, and also stretches with gluings) is computable.
+\end{theorem}
+\begin{proof}
+The bounding box never shrinks under stretching, the number of cells grows, and the factor is at most the side of the final bounding box. Hence all intermediate states lie in a finite set (subsets of the box with gluings), and breadth-first search terminates.
+\end{proof}
+
 \begin{problem}
-Is computing $\ell(O)$ decidable in general? Zones and factors are unbounded, and intermediate objects may be arbitrarily large.
+Is $\ell$ computable when compressions and $\sigma$ are allowed? Then intermediate objects may leave the bounding box.
 \end{problem}
 
 \begin{problem}
@@ -250,7 +268,7 @@ For which classes of height sets is $R(H)$ computable in polynomial time? Is the
 \end{problem}
 
 \begin{problem}\label{pr:limit}
-Do chains containing compressions and $\sigma$ have a limit under grid refinement (cf.\ Theorem~\ref{thm:affine}(c))?
+Do infinite chains, or chains whose group limits are not Jordan measurable, have a limit (cf.\ Theorem~\ref{thm:limit})?
 \end{problem}
 
 \begin{problem}
@@ -259,7 +277,7 @@ Which statements about holes (Theorem~\ref{thm:holes}) carry over to thin object
 
 \section{Formalization and programs}\label{sec:formal}
 
-The core of the system is written in Lean~4 \cite{lean} (version 4.37.0-rc1, no external libraries): definitions of points, objects, the actions $\alpha$, $\sigma$, $\beta$, rule P3 and chains, and 36 theorems relying only on the standard axioms (\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}), with no gaps (\texttt{sorry}). Machine-checked: the lower bound $m(O)\le\ell(O)$ of Theorem~\ref{thm:bounds}(a) for the whole core; losslessness of stretching; the preimages of $\sigma$; the structural part of Lemma~\ref{lem:bit}; the growth step of Theorem~\ref{thm:loss}; that the bounding box never shrinks under stretching (hence the bounded-box searches in §\ref{sec:conj} are exact); the key step of the reduction in Theorem~\ref{thm:np}; the cell count under stretching and absence of overlaps; merging of cells under compression; the counting in Lemma~\ref{lem:bit}; parts (a)–(c) of Theorem~\ref{thm:R} and the replacement steps of (d); invertibility of the $90^\circ$ rotation; the cellular part of Theorem~\ref{thm:affine}(a,b); the vertex count over all 256 configurations and parts (b)–(d) of Theorem~\ref{thm:holes}. Not formalized: the topological part of Theorem~\ref{thm:holes}(a), limits, and NP-hardness (which relies on the published result \cite{jiang}).
+The core of the system is written in Lean~4 \cite{lean} (version 4.37.0-rc1, no external libraries): definitions of points, objects, the actions $\alpha$, $\sigma$, $\beta$, rule P3 and chains, and 38 theorems relying only on the standard axioms (\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}), with no gaps (\texttt{sorry}). Machine-checked: the lower bound $m(O)\le\ell(O)$ of Theorem~\ref{thm:bounds}(a) for the whole core; losslessness of stretching; the preimages of $\sigma$; the structural part of Lemma~\ref{lem:bit}; the growth step of Theorem~\ref{thm:loss}; that the bounding box never shrinks under stretching (hence the bounded-box searches in §\ref{sec:conj} are exact); the key step of the reduction in Theorem~\ref{thm:np}; the cell count under stretching and absence of overlaps; merging of cells under compression; the counting in Lemma~\ref{lem:bit}; parts (a)–(c) of Theorem~\ref{thm:R} and the replacement steps of (d); invertibility of the $90^\circ$ rotation; the cellular part of Theorem~\ref{thm:affine}(a,b); the vertex count over all 256 configurations and parts (b)–(d) of Theorem~\ref{thm:holes}. Not formalized: the topological part of Theorem~\ref{thm:holes}(a), limits, and NP-hardness (which relies on the published result \cite{jiang}).
 
 All exhaustive searches were done by programs in Python and C++; programs, data and Lean files are open (link in the footnote on the first page).
 
