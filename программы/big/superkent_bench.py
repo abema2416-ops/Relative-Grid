@@ -1,6 +1,6 @@
 import sys, random, time, math
 sys.argv=[sys.argv[0]]+sys.argv[1:]
-exec(open('/tmp/claude-0/-home-claude/70a5592c-c34c-5075-ac31-210cdddf20fb/scratchpad/superkent.py').read().split("H=json.load")[0])
+exec(open('superkent.py').read().split("H=json.load")[0])
 src=open('pipe.py').read().split('if __name__')[0]; exec(src)
 rng=random.Random(5)
 for k in [5,6,7,8,9]:

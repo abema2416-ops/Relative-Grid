@@ -12,7 +12,7 @@ def divisors(n):
     if m>1: fac.append((m,1))
     for p,e in fac: ds=[d*p**k for d in ds for k in range(e+1)]
     return ds
-def solve(H,k,deadline):
+def solve(H,k,deadline,kmin=1):
     """Точный поиск «R ≤ k?»: берём самую маленькую ещё не собранную высоту h; она — произведение части
     набора, значит следующий множитель — делитель h / p, где p — произведение уже выбранных (закономерности:
     делители, высоты, степени и повторяющиеся множители появляются тут сами). Отсечения: число непустых
@@ -41,7 +41,7 @@ def solve(H,k,deadline):
                 res=dfs(M+[d])
                 if res: return res
         return None
-    for kk in range(1,k+1):
+    for kk in range(kmin,k+1):
         k=kk
         res=dfs([])
         if res: return kk,res,nodes[0]
