@@ -38,3 +38,7 @@ open Setka
 #print axioms Setka.Core.stretch_lossless
 #print axioms Setka.Core.schain_frame
 #print axioms Setka.Core.stretch_image_ends
+#print axioms Setka.Core.anchor_shift
+#print axioms Setka.Core.stretch_shift
+#print axioms Setka.Core.sigma_shift
+#print axioms Setka.Core.shrink_shift

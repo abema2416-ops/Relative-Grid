@@ -347,4 +347,119 @@ theorem stretch_image_ends (O Z : Obj n) (i : Fin n) (s : Int) (f : Nat) (hf : 2
     stretch O Z i s f a (upd c i (s * (a + f * (s * c i - a) + ((f - 1 : Nat) : Int)))) :=
   ⟨Or.inr ⟨c, hc, hz, 0, by omega, rfl⟩, Or.inr ⟨c, hc, hz, f - 1, by omega, rfl⟩⟩
 
+/-! ## Сдвиг (трансляционная эквивалентность) и зоны: действия перестановочны со сдвигом,
+    если зону сдвигать вместе с объектом, а закреплённую сторону — на s·v_i. -/
+
+def addv (x v : Pt n) : Pt n := fun k => x k + v k
+/-- Сдвиг объекта (или зоны) на вектор v: x ∈ shift O v ↔ x − v ∈ O. -/
+def shift (O : Obj n) (v : Pt n) : Obj n := fun x => O (fun k => x k - v k)
+
+theorem upd_addv (c v : Pt n) (i : Fin n) (w : Int) :
+    upd (addv c v) i (w + v i) = addv (upd c i w) v := by
+  funext k; by_cases h : k = i
+  · subst h; simp [upd, addv]
+  · simp [upd, addv, h]
+
+theorem shift_mem (O : Obj n) (v x : Pt n) : shift O v (addv x v) ↔ O x := by
+  have : (fun k => addv x v k - v k) = x := by funext k; simp [addv]
+  simp [shift, this]
+
+/-- Закреплённая сторона сдвинутого объекта в сдвинутой зоне — a + s·v_i. -/
+theorem anchor_shift (O Z : Obj n) (i : Fin n) (s a : Int) (v : Pt n) (h : Anchor O Z i s a) :
+    Anchor (shift O v) (shift Z v) i s (a + s * v i) := by
+  obtain ⟨⟨e, he, hz, hea⟩, hmin⟩ := h
+  refine ⟨⟨addv e v, (shift_mem O v e).2 he, (shift_mem Z v e).2 hz, ?_⟩, ?_⟩
+  · simp only [addv]; rw [Int.mul_add, hea]
+  · intro c hc hcz
+    have h1 := hmin _ hc hcz
+    have : s * c i = s * (c i - v i) + s * v i := by rw [← Int.mul_add]; congr 1; omega
+    omega
+
+/-- **Сдвиг и растяжение перестановочны:** α_{Z+v}(O + v) = α_Z(O) + v (якорь a ↦ a + s·v_i). -/
+theorem stretch_shift (O Z : Obj n) (i : Fin n) (s : Int) (hs : Dir s) (f : Nat) (a : Int) (v : Pt n) :
+    ∀ x, stretch (shift O v) (shift Z v) i s f (a + s * v i) x ↔ shift (stretch O Z i s f a) v x := by
+  have hss : s * s = 1 := by rcases hs with rfl | rfl <;> decide
+  intro x
+  -- запишем x = y + v
+  have hx : x = addv (fun k => x k - v k) v := by funext k; simp [addv]
+  rw [hx]
+  generalize (fun k => x k - v k) = y
+  rw [shift_mem]
+  simp only [stretch]
+  rw [shift_mem, shift_mem]
+  constructor
+  · rintro (h | ⟨c, hc, hz, j, hj, he⟩)
+    · exact Or.inl h
+    · right
+      refine ⟨fun k => c k - v k, hc, hz, j, hj, ?_⟩
+      funext k
+      have := congrFun he k
+      by_cases hk : k = i
+      · subst hk
+        simp only [upd, addv, if_true] at this ⊢
+        have e1 : s * (a + s * v k + ↑f * (s * c k - (a + s * v k)) + ↑j)
+            = s * (a + ↑f * (s * (c k - v k) - a) + ↑j) + s * s * v k := by
+          rw [Int.mul_sub s (c k) (v k)]
+          simp only [Int.mul_add, Int.mul_sub, ← Int.mul_assoc]
+          omega
+        rw [hss, Int.one_mul] at e1
+        omega
+      · simp only [upd, addv, hk, if_false] at this ⊢; omega
+  · rintro (h | ⟨c, hc, hz, j, hj, he⟩)
+    · exact Or.inl h
+    · right
+      refine ⟨addv c v, (shift_mem O v c).2 hc, (shift_mem Z v c).2 hz, j, hj, ?_⟩
+      rw [he]
+      funext k
+      by_cases hk : k = i
+      · subst hk
+        simp only [upd, addv, if_true]
+        have e1 : s * (a + s * v k + ↑f * (s * (c k + v k) - (a + s * v k)) + ↑j)
+            = s * (a + ↑f * (s * c k - a) + ↑j) + s * s * v k := by
+          simp only [Int.mul_add, Int.mul_sub, ← Int.mul_assoc]
+          omega
+        rw [hss, Int.one_mul] at e1
+        omega
+      · simp [upd, addv, hk]
+
+/-- σ и сдвиг перестановочны. -/
+theorem sigma_shift (O Z : Obj n) (v : Pt n) :
+    ∀ x, sigma (shift O v) (shift Z v) x ↔ shift (sigma O Z) v x := by
+  intro x; simp [sigma, shift]
+
+/-- Сжатие и сдвиг перестановочны (числитель s·c_i − a не меняется). -/
+theorem shrink_shift (O Z : Obj n) (i : Fin n) (s : Int) (hs : Dir s) (f : Nat) (a : Int) (v : Pt n) :
+    ∀ x, shrink (shift O v) (shift Z v) i s f (a + s * v i) x ↔ shift (shrink O Z i s f a) v x := by
+  have hss : s * s = 1 := by rcases hs with rfl | rfl <;> decide
+  have key : ∀ c : Pt n, shrinkCell i s f (a + s * v i) (addv c v) = addv (shrinkCell i s f a c) v := by
+    intro c; funext k
+    by_cases hk : k = i
+    · subst hk
+      simp only [shrinkCell, upd, addv, if_true]
+      have hnum : s * (c k + v k) - (a + s * v k) = s * c k - a := by rw [Int.mul_add]; omega
+      rw [hnum, Int.mul_add, Int.mul_add, Int.mul_add, ← Int.mul_assoc s s, hss, Int.one_mul]; omega
+    · simp [shrinkCell, upd, addv, hk]
+  intro x
+  have hx : x = addv (fun k => x k - v k) v := by funext k; simp [addv]
+  rw [hx]
+  generalize (fun k => x k - v k) = y
+  rw [shift_mem]
+  simp only [shrink]
+  rw [shift_mem, shift_mem]
+  constructor
+  · rintro (h | ⟨c, hc, hz, he⟩)
+    · exact Or.inl h
+    · right
+      have hc' : c = addv (fun k => c k - v k) v := by funext k; simp [addv]
+      rw [hc', key] at he
+      refine ⟨fun k => c k - v k, ?_, ?_, ?_⟩
+      · have := (shift_mem O v (fun k => c k - v k)).1; rw [← hc'] at this; exact this hc
+      · have := (shift_mem Z v (fun k => c k - v k)).1; rw [← hc'] at this; exact this hz
+      · funext k; have := congrFun he k; simp only [addv] at this; omega
+  · rintro (h | ⟨c, hc, hz, he⟩)
+    · exact Or.inl h
+    · right
+      refine ⟨addv c v, (shift_mem O v c).2 hc, (shift_mem Z v c).2 hz, ?_⟩
+      rw [key, he]
+
 end Setka.Core

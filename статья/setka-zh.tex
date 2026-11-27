@@ -69,7 +69,7 @@
 \[
 \text{压缩：} \alpha(O)=(O\setminus G)\cup\{c[a+\lfloor t(c)/f\rfloor]: c\in G\}.
 \]
-若新格点与 $O\setminus G$ 不相交，则操作是允许的（规则 P3）。拉伸时一个格点的像是 $f$ 个相连且互相粘合的格点；粘合 $\{c,c'\}$ 变为它们的像中所有边相邻对的粘合。若拉伸或压缩后某对已粘合格点不再接触，则该操作不允许（规则 P5）：粘合只能由 $\beta_-$ 去掉，或随格点一起删去。
+若新格点与 $O\setminus G$ 不相交，则操作是允许的（规则 P3）。没有允许重叠的参数：一旦重叠，操作即被拒绝。\emph{粘合的维数}是 $Q(c)\cap Q(c')$ 的维数。拉伸时一个格点的 $f$ 个像依次粘合，粘合 $\{c,c'\}$ 变为所有满足 $Q(x)\cap Q(x')\cap T(Q(c)\cap Q(c'))$ 维数不变的像对 $\{x,x'\}$ 的粘合（$T$ 为仿射拉伸，第~\ref{sec:affine} 节）；压缩时粘合变为 $c$ 与 $c'$ 的像之间的粘合，格点合并时粘合消失。若操作后某个粘合不能以相同维数保留，则该操作不允许（规则 P5）：粘合只能由 $\beta_-$ 去掉，或随格点一起删去。对沿边的粘合，这意味着已粘合的格点不能失去公共边。
 \end{definition}
 
 \begin{definition}[$\sigma$、$\beta_\pm$]
@@ -77,7 +77,9 @@ $\sigma_Z(O)=O\setminus Z$。操作 $\beta_+$ 向 $S$ 中加入一组接触但�
 \end{definition}
 
 \begin{definition}[损失、操作次数]
-参数固定的操作 $\varphi$ 可作用于其区域的任意内容。其\emph{损失} $\lo(\varphi,O)=\log_2 N$，其中 $N$ 是在区域外与 $O$ 一致、$\varphi$ 允许且 $\varphi(O')=\varphi(O)$ 的物体 $O'$ 的个数。操作链的损失是各步损失之和。\emph{操作次数} $\ell(O)$ 是把一个格点变为 $O$（不计平移）的操作链的最小长度。
+参数固定的操作 $\varphi$ 可作用于其区域的任意内容。其\emph{损失} $\lo(\varphi,O)=\log_2 N$，其中 $N$ 是在区域外与 $O$ 一致、$\varphi$ 允许且 $\varphi(O')=\varphi(O)$ 的物体 $O'$ 的个数。操作链的损失是各步损失之和。损失按格点计算（不计粘合）。操作链从一个没有粘合的格点开始。\emph{格点形状的操作次数} $\ell(O)$ 是使格点集等于 $O$（粘合任意）的操作链的最小长度；\emph{物体的操作次数} $\ell(O,S)$ 要求粘合恰为 $S$。在末尾至多加一个 $\beta_-$ 和一个 $\beta_+$，得 $\ell(O)\le\ell(O,S)\le\ell(O)+2$。由 $\beta_+$ 粘合的对数（\emph{粘合代价}）单独计算，只在第~\ref{sec:holes} 节使用。
+
+\emph{平移与区域。}形状不计平移，而区域用代表元的坐标给出；物体平移 $v$ 时区域随之平移：$\alpha_{Z+v}(O+v)=\alpha_Z(O)+v$，$\sigma_{Z+v}(O+v)=\sigma_Z(O)+v$（已在 Lean 中检验）。因此 $\ell$ 和损失与代表元及起始格点无关。
 \end{definition}
 
 拉伸、$\beta_+$ 和 $\beta_-$ 没有损失：由结果和参数可唯一恢复原状态（对拉伸而言，因为不同格点的像互不相交）。
@@ -284,7 +286,7 @@ $4\times4\times4$ & 3 & $\le3$ & $4\,760\,995$\\
 
 \section{形式化与程序}\label{sec:formal}
 
-系统核心用 Lean~4 \cite{lean} 写成（版本 4.37.0-rc1，无外部库）：点、物体、操作 $\alpha$、$\sigma$、$\beta$、规则 P3 与操作链的定义，以及 38 个定理，只依赖标准公理（\texttt{propext}、\texttt{Classical.choice}、\texttt{Quot.sound}），没有缺口（\texttt{sorry}）。机器检验的内容包括：定理~\ref{thm:bounds}(a) 的下界 $m(O)\le\ell(O)$（对整个核心成立）；拉伸无损失；$\sigma$ 的原像；引理~\ref{lem:bit} 的结构部分；定理~\ref{thm:loss} 的生长步骤；拉伸下外接框不缩小（因此第~\ref{sec:conj} 节中有界范围内的穷举是精确的）；定理~\ref{thm:np} 中归约的关键步骤；拉伸下的格点计数与无重叠；压缩下格点的合并；引理~\ref{lem:bit} 中的计数；定理~\ref{thm:R} 的 (a)–(c) 及 (d) 的替换步骤；$90^\circ$ 旋转的可逆性；定理~\ref{thm:affine}(a,b) 的格点部分；全部 256 种构型的顶点计数及定理~\ref{thm:holes} 的 (b)–(d)。未形式化的有：定理~\ref{thm:holes}(a) 的拓扑部分、极限以及 NP 困难性（后者依赖已发表的结果 \cite{jiang}）。
+系统核心用 Lean~4 \cite{lean} 写成（版本 4.37.0-rc1，无外部库）：点、物体、操作 $\alpha$、$\sigma$、$\beta$、规则 P3 与操作链的定义，以及 42 个定理，只依赖标准公理（\texttt{propext}、\texttt{Classical.choice}、\texttt{Quot.sound}），没有缺口（\texttt{sorry}）。机器检验的内容包括：定理~\ref{thm:bounds}(a) 的下界 $m(O)\le\ell(O)$（对整个核心成立）；拉伸无损失；$\sigma$ 的原像；引理~\ref{lem:bit} 的结构部分；定理~\ref{thm:loss} 的生长步骤；拉伸下外接框不缩小（因此第~\ref{sec:conj} 节中有界范围内的穷举是精确的）；定理~\ref{thm:np} 中归约的关键步骤；拉伸下的格点计数与无重叠；压缩下格点的合并；引理~\ref{lem:bit} 中的计数；定理~\ref{thm:R} 的 (a)–(c) 及 (d) 的替换步骤；$90^\circ$ 旋转的可逆性；定理~\ref{thm:affine}(a,b) 的格点部分；全部 256 种构型的顶点计数及定理~\ref{thm:holes} 的 (b)–(d)。未形式化的有：定理~\ref{thm:holes}(a) 的拓扑部分、极限以及 NP 困难性（后者依赖已发表的结果 \cite{jiang}）。
 
 所有穷举都由 Python 和 C++ 程序完成；程序、数据和 Lean 文件均已公开（见首页脚注中的链接）。
 
