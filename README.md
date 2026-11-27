@@ -2,7 +2,7 @@
 
 **English summary.** A system of actions on shapes made of lattice cells: stretch or compress part of a shape along one axis by an integer factor (α), delete cells (σ), glue or unglue touching cells (β). Each action has an information loss in bits; each shape has a number of actions needed to build it from one cell. Proven: every vanished cell costs at least 1 bit; cellular stretching equals the affine stretch exactly; in the plane stretching keeps the number of holes and one gluing changes it by at most 1; counting actions for reliefs is NP-hard. Conjecture (the *segment rule*) checked by exhaustive search on 4,835,965 shapes in 2D and 3D. Core formalized in Lean 4 (42 machine-checked theorems, no sorry).
 
-**Read the paper:** [English](статья/setka-en.pdf) · [中文](статья/setka-zh.pdf) · [Русский](статья/setka.pdf). Author: Muhammad Zafarov. License: CC BY 4.0 (text), MIT (code). Questions, criticism and counterexamples are welcome — open an Issue.
+**Main text (Russian, 11 pp.):** [основной-текст/osnova.pdf](основной-текст/osnova.pdf). **Read the paper:** [English](статья/setka-en.pdf) · [中文](статья/setka-zh.pdf) · [Русский](статья/setka.pdf). Author: Muhammad Zafarov. License: CC BY 4.0 (text), MIT (code). Questions, criticism and counterexamples are welcome — open an Issue.
 
 ---
 
@@ -23,7 +23,8 @@
 
 | Файл / папка | Что это |
 |---|---|
-| `Относительная сетка — черновик 1.13.txt` | Полный текст теории |
+| **`основной-текст/osnova.pdf`** | **Основной текст 2.0 (11 страниц): ядро, все доказанные теоремы, гипотезы, надстройки в приложении. Начинать с него.** |
+| `Относительная сетка — черновик 1.13.txt` | Рабочий журнал: полный черновик со всеми проверками и историей версий |
 | `Относительная сетка — ядро и аудит.txt` | Строгое определение ядра; таблица: чем подтверждено каждое утверждение (Lean, текст, известный факт, перебор); строгие доказательства |
 | `статья/setka.pdf`, `статья/setka.tex` | Короткая статья в классическом виде (8 страниц): определения, теоремы с доказательствами, гипотезы, литература |
 | `статья/setka-en.pdf` | Та же статья на английском |
