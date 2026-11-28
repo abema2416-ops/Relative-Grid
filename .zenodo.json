@@ -1,0 +1,10 @@
+{
+  "title": "The Relative Grid: actions on cells of Z^n, information loss and the number of actions",
+  "upload_type": "publication",
+  "publication_type": "preprint",
+  "description": "A system of actions on finite sets of cells of the lattice Z^n (stretching and compressing part of an object, deleting cells, gluing side neighbours). Studies the information loss of actions in bits and the least number of actions needed to build a shape. Includes the main text (English and Russian), a short paper (English, Russian, Chinese), Lean 4 proofs (42 theorems) and programs.",
+  "creators": [{"name": "Zafarov, Muhammad"}],
+  "license": "cc-by-4.0",
+  "keywords": ["digital geometry", "lattice", "information loss", "Lean 4", "NP-hardness", "normal set basis", "cellular homology"],
+  "language": "eng"
+}
