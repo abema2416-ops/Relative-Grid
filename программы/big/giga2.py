@@ -41,6 +41,16 @@ def giga2(H,limit=60):
     r=jumps(H,lb,3,time.time()+min(5,limit))
     if r and r[0]<ub: ub=r[0]; how='кент скачков'
     if ub==lb: return lb,lb,ub,how+' = низ',time.time()-t
+    # бесквадратные высоты: быстрый точный решатель на битовых масках (core_exact.cpp)
+    import subprocess, os
+    fs=[fac(h) for h in H]; primes=sorted({p for f in fs for p in f})
+    if all(max(f.values())==1 for f in fs) and len(primes)<=24 and os.path.exists('./core_exact'):
+        masks=[sum(1<<primes.index(p) for p in f) for f in fs]
+        left=max(1,int(limit-(time.time()-t)))
+        out=subprocess.run(['./core_exact',str(left),str(lb),str(ub-1)],input=f"{len(H)} {len(primes)}\n"+" ".join(map(str,masks)),capture_output=True,text=True).stdout
+        if 'R =' in out: k=int(out.split('R =')[1].split()[0]); return k,lb,k,'решатель на масках',time.time()-t
+        if 'не успел' not in out: return ub,lb,ub,'доказано: верх точный (маски)',time.time()-t
+        return None,lb,ub,'вилка',time.time()-t
     freq=Counter(b//a for a in H for b in H if b>a and b%a==0)
     try:
         g=guided(H,ub-1,t+limit,lb,freq)

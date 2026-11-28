@@ -37,7 +37,7 @@ int main(int argc,char**argv){
     cin>>n>>U; F.resize(n); for(auto&x:F)cin>>x;
     T0=chrono::steady_clock::now();
     for(int k=lo;k<=hi;k++){ B.clear();
-        try{ if(dfs(k)){ printf("R = %d (точно: для k < %d решения нет), узлов %lld, %.1f с\n",k,k,nodes,chrono::duration<double>(chrono::steady_clock::now()-T0).count()); return 0;} 
+        try{ if(dfs(k)){ printf("R = %d (точно: для k < %d решения нет), узлов %lld, %.1f с\nблоки:",k,k,nodes,chrono::duration<double>(chrono::steady_clock::now()-T0).count()); for(int b:B) printf(" %d",b); printf("\n"); return 0;} 
              else printf("k = %d: решения нет (доказано), узлов %lld\n",k,nodes); fflush(stdout);}
         catch(int){ printf("k = %d: не успел за %.0f с\n",k,LIM); return 0;}
     }
