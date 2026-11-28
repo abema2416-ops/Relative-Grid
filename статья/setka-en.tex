@@ -206,6 +206,22 @@ A normal set basis of a family $\mathcal F$ is a collection $\mathcal B$ such th
 (a) $R$ factors give at most $2^R-1$ nonempty subsets, and distinct heights need distinct subsets. (b) A factor shared by two heights would divide both. (c) The factors $b,b^2,b^4,\dots,b^{2^{k-1}}$ give every $b^e$, $e\le 2^k-1$, via the binary expansion of $e$. (d) In a minimum set, a factor used by two heights lies in $\mathcal D$. Each height has at most one ``private'' factor (two could be replaced by their product). Replace the private factor of $h$ by $h/a$ if the factorization of $h$ contains a shared factor $a$, and by $h$ otherwise; the size does not grow. Enumerating sets of $k$ candidates, $|C(H)|=O(D^3h_{\max})$, is polynomial for fixed $k$.
 \end{proof}
 
+\begin{theorem}[rank bound]\label{thm:rank}
+Let $A$ be the exponent table: rows are heights, columns are primes. Then $R(H)\ge\operatorname{rank}_{\mathbb Q}A$.
+\end{theorem}
+\begin{proof}
+The exponent vector of a height is the sum of those of its factors, so $A=UV$ with $U$ a $0/1$ table of size $|H|\times R$.
+\end{proof}
+
+\begin{theorem}[where savings hide]\label{thm:tree}
+If $R(H)<|H|$, there is a group of heights $T$ built from factors each used by at least two heights, with $R(T)<|T|$; the rows of $T$ in $A$ are linearly dependent. If $A$ has exactly one row dependency, $T$ contains its support.
+\end{theorem}
+\begin{proof}
+Every height outside $T$ uses a private factor, so $R(H)\ge(\text{shared})+(|H|-|T|)$, whence $R(T)\le|T|-1$; then apply Theorem~\ref{thm:rank}.
+\end{proof}
+
+In practice the lower bound $\max(\operatorname{rank}A,\lceil\log_2(D+1)\rceil)$, together with heuristics (frequent ratios of heights, greedy extraction of common divisors) and exact search pruned by rank, gave the exact answer on all 30 hard test instances and on instances with 257 and 150 heights (up to 36 digits) in fractions of a second. There are also instances with 20 heights where a gap $12\le R\le 14$ remains after a minute.
+
 So the number of actions has exact ``easy'' cases (b), (c) and a ``hard middle''; for the full number $\ell$ (with partial zones, where heights are not only multiplied but also added) hardness is not proven.
 
 \section{Conjectures and open problems}\label{sec:conj}
