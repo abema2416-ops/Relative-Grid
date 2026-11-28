@@ -30,7 +30,7 @@
 \newcommand{\lean}[1]{\texttt{#1}}
 \DeclareMathOperator{\vol}{vol}
 
-\title{\textbf{The Relative Grid}\\[4pt] \large Main text, version 2.1}
+\title{\textbf{The Relative Grid}\\[4pt] \large Main text, version 2.2}
 \author{Muhammad Zafarov\thanks{Author of the system, its definitions and conjectures. Proofs and text prepared with the help of the AI assistant Claude (Anthropic). Text licensed under CC~BY~4.0, programs and Lean files under MIT. Repository: \url{https://github.com/abema2416-ops/Relative-Grid}.}}
 \date{28 November 2026}
 
@@ -46,9 +46,11 @@ This is the canonical text of the ``Relative Grid'' system. It contains only the
 
 \section{Introduction and status of results}
 
+\paragraph{In short.} Take a shape made of cells. Five actions are allowed: stretch part of the shape by an integer factor, compress it, delete cells, glue and unglue neighbours. We ask two things: (1) in how many actions can the shape be built from one cell; (2) how much information (bits) is lost on the way. Main answers: stretching loses nothing, while deleting each cell costs a bit; a cube of any size is built in 3 actions; a hole without loss can only be made by gluing; the least-number-of-factors problem $R(H)$, which gives the number of actions for reliefs in the column model, is NP-hard (for the number of actions $\ell$ itself this is not proven), but there are exact lower bounds (via rank) and a method that solved all our hard tests. What is new here and what is known, and examples comparing with other approaches, are in §\ref{sec:new}--\ref{sec:cmp}.
+
 \paragraph{The question.} A shape cut by a grid is a set of cells. We fix a small set of actions on such sets and ask: how many actions are needed to build a given shape from one cell, and how much information is lost on the way.
 
-\paragraph{What is specific to the system.} The action $\alpha$ itself is a special affine stretch (Theorem~\ref{thm:affine}); counting holes relies on cellular homology; stretching and compression resemble dilation and erosion in mathematical morphology. Specific to the system are: (1) how an action is specified — a zone and a fixed side, in cells; (2) bit-level loss for actions on shapes and the asymmetry ``removing is costly, restoring is free''; (3) gluings separated from touching, and their link to the number of holes; (4) the number of actions $\ell$, its NP-hardness for reliefs, its computability without loss, the rank bound and the segment rule. Related work is compared in §\ref{sec:related}.
+\paragraph{What is specific to the system.} The action $\alpha$ itself is a special affine stretch (Theorem~\ref{thm:affine}); counting holes relies on cellular homology; stretching and compression resemble dilation and erosion in mathematical morphology. Specific to the system are: (1) how an action is specified — a zone and a fixed side, in cells; (2) bit-level loss for actions on shapes and the asymmetry ``removing is costly, restoring is free''; (3) gluings separated from touching, and their link to the number of holes; (4) the number of actions $\ell$, NP-hardness of the factor problem $R(H)$ for reliefs, its computability without loss, the rank bound and the segment rule. Related work is compared in §\ref{sec:related}.
 
 \paragraph{How results are marked.} Table~\ref{tab:status} shows how each result is supported: \textbf{L} — machine-checked in Lean~4 (standard axioms only, no gaps); \textbf{L+T} — main part in Lean, the rest by a rigorous text proof; \textbf{T} — rigorous text proof; \textbf{K} — relies on a published theorem; \textbf{E} — exhaustive computer check only (not a proof).
 
@@ -64,17 +66,17 @@ Stretching is lossless; preimages of $\sigma$ & L & §\ref{sec:props}\\
 Shifting an object together with its zone & L & §\ref{sec:shift}\\
 Every vanished cell costs $\ge1$ bit & L+T & §\ref{sec:loss}\\
 Loss $\ge|A|-|B|$; removing costs $h$ bits, restoring 0 & L+T & §\ref{sec:loss}\\
-Exact loss of compressing a row & T + E & §\ref{sec:loss}\\
+Exact loss of compressing a row & L+T & §\ref{sec:loss}\\
 Stretch = affine stretch & L & §\ref{sec:affine}\\
 Limits of finite chains (stretches, compressions, $\sigma$) & T & §\ref{sec:affine}\\
 Gluings and holes in the plane & L+T & §\ref{sec:holes}\\
 $m(O)\le\lc(O)\le|O|-1$; a box in $k$ actions & L+T & §\ref{sec:count}\\
 $\lc\le\ell\le\lc+2$; bounding box $+\sigma$ in $n+1$ & T & §\ref{sec:count}\\
 Computability of $\ell$ without loss & L+T & §\ref{sec:count}\\
-Reliefs: $R(H)$ and normal set basis, NP-hardness & L+T+K & §\ref{sec:reliefs}\\
+Reliefs: $R(H)$ and normal set basis; the factor problem $R(H)$ is NP-hard (not $\ell$ itself) & L+T+K & §\ref{sec:reliefs}\\
 Bounds and exact cases for $R(H)$ & L & §\ref{sec:reliefs}\\
-Rank bound $R\ge\operatorname{rank}A$ & T & §\ref{sec:reliefs}\\
-Where savings hide (tree method) & T & §\ref{sec:reliefs}\\
+Rank bound $R\ge\operatorname{rank}A$ & L & §\ref{sec:reliefs}\\
+Where savings hide (tree method) & L+T & §\ref{sec:reliefs}\\
 Computational method: 30/30 hard instances, instances with 150--257 heights & E & §\ref{sec:compute}\\
 Segment rule: $\lseg\ge\ell_\alpha$; equality when $\ell_\alpha\le2$ & T & §\ref{sec:seg}\\
 Segment rule in general & E & §\ref{sec:seg}, Conjecture~\ref{conj:seg}\\
@@ -190,7 +192,7 @@ N=2^{\,z_{B_0}-1}\prod_{B\ne B_0,\ B\text{ nonempty}}\bigl(2^{z_B}-1\bigr).
 \]
 \end{theorem}
 \begin{proof}
-The result is determined by the anchor and the set of nonempty blocks. A content gives the same result exactly when its leftmost cell is $a$ and the same blocks are nonempty. Choices in blocks are independent.
+The result is determined by the anchor and the set of nonempty blocks. A content gives the same result exactly when its leftmost cell is $a$ and the same blocks are nonempty. Choices in blocks are independent. In Lean: the count is \lean{card\_preimages} (with Mathlib), the geometric part is \lean{shrink\_same\_of\_blocks}, \lean{shrinkCell\_eq\_iff}.
 \end{proof}
 Checked exhaustively on 2872 random rows ($L\le13$, $f=2,3,4$). Example: $L=20$, $f=2$, four cells vanish — the lemma gives $N\ge16$, the theorem $N=4374$.
 
@@ -316,13 +318,15 @@ For squarefree heights $R(H)$ equals the least size of a normal set basis of the
 Parts of a factorization of a squarefree height are squarefree and pairwise have no common divisor greater than 1 (\lean{sqfree\_dvd}, \lean{sqfree\_parts\_disjoint}), so their prime sets are disjoint. Conversely, a basis yields products of primes. A family of subsets of $\{u_1,\dots,u_k\}$ is encoded by the first $k$ primes; the heights have polynomial length. Normal Set Basis is NP-complete \cite{jiang}.
 \end{proof}
 
+\paragraph{What exactly is NP-hard here.} Theorem~\ref{thm:np} is about the \emph{factor problem} $R(H)$, not about the number of actions $\ell$. For a relief $\ell(O)\le\ell(B)+R(H)$, and in the column model (base first, then stretches of whole columns) the number of actions equals $\ell(B)+R(H)$. Hence the number of actions in the column model is NP-hard when the relief is given by its heights in binary. For the true $\ell$ of reliefs (arbitrary chains) and for $\ell$ in general, NP-hardness is \emph{not proven} (Problem~\ref{pr:np}).
+
 \paragraph{The exponent table.} Let $A$ be the table whose row is a height, column a prime, and entry the exponent of the prime in the height. A factor is a ``rectangle'' in this table: the heights using it $\times$ its exponents.
 
 \begin{theorem}[rank bound]\label{thm:rank}
 $R(H)\ge\operatorname{rank}_{\mathbb Q}A$.
 \end{theorem}
 \begin{proof}
-If the heights are built from factors $m_1,\dots,m_R$, the exponent vector of $h$ equals $\sum_{m\in S_h}v(m)$. Hence $A=UV$ with $U$ a $0/1$ table of size $|H|\times R$ and $V$ the exponent table of the factors. The rank of a product is at most $R$.
+If the heights are built from factors $m_1,\dots,m_R$, the exponent vector of $h$ equals $\sum_{m\in S_h}v(m)$. Hence $A=UV$ with $U$ a $0/1$ table of size $|H|\times R$ and $V$ the exponent table of the factors. The rank of a product is at most $R$. In Lean: \lean{expTable\_eq\_mul}, \lean{rank\_bound} (with Mathlib).
 \end{proof}
 
 The lower bound is $\max(\operatorname{rank}A,\lceil\log_2(D+1)\rceil)$: the logarithm is strong when there are many heights, the rank when there are many primes. If it meets any upper bound ($D$, the number of primes, or the answer of any heuristic), the answer is exact without search.
@@ -331,7 +335,7 @@ The lower bound is $\max(\operatorname{rank}A,\lceil\log_2(D+1)\rceil)$: the log
 Let a set $B$ build $H$; call a factor shared if it occurs in the factorizations of at least two heights, and private otherwise; let $T$ be the heights factored only by shared factors. Then $|B|\ge(\text{number of shared})+(|H|-|T|)$, and every factor in the factorization of $h\in T$ lies in $h\cap g$ for some other height $g$. If $R(H)<|H|$, there is a group $T$ with $R(T)<|T|$; its rows in $A$ are linearly dependent. If $A$ has exactly one row dependency, $T$ contains its support.
 \end{theorem}
 \begin{proof}
-Each height outside $T$ uses at least one private factor, and private factors of different heights are different. A shared factor occurring in $h$ and in $g$ lies in $h\cap g$. From $R(T)<|T|$ and Theorem~\ref{thm:rank}, $\operatorname{rank}(T)<|T|$; a dependency among the rows of $T$ extends by zeros to one among the rows of $H$, i.e.\ is a multiple of the unique one.
+Each height outside $T$ uses at least one private factor, and private factors of different heights are different. A shared factor occurring in $h$ and in $g$ lies in $h\cap g$. From $R(T)<|T|$ and Theorem~\ref{thm:rank}, $\operatorname{rank}(T)<|T|$; a dependency among the rows of $T$ extends by zeros to one among the rows of $H$, i.e.\ is a multiple of the unique one. In Lean: \lean{card\_ge\_shared\_add}, \lean{shared\_in\_two}, \lean{saving\_in\_group}, \lean{le\_of\_rows\_independent} (with Mathlib).
 \end{proof}
 
 \begin{example}
@@ -400,8 +404,55 @@ Total & & & $4\,835\,965$\\
 
 P5 matters: without it $9870$ shapes are reachable in the $3\times6$ box versus $8632$ (counting the single cell), and the rule does not describe them. For reliefs a simpler variant — steps over faces (multiply or extend lines ending at one face) — matched the minimum on all 859 reliefs tested; for arbitrary shapes it holds in only 5237 of 8631 cases. A further random test (about 3100 chains in wider boxes, many aimed at the rule's weak point) found no counterexample.
 
+\section{What is new and what is known}\label{sec:new}
+
+This section separates honestly which results apply known facts and which are obtained in this work. ``New'' means: not found in the literature we reviewed (§\ref{sec:related}); no exhaustive literature survey was made.
+
+\begin{longtable}{p{0.40\textwidth}p{0.53\textwidth}}
+\caption{Known and new}\label{tab:new}\\
+\toprule
+Already known (we only apply it) & New in this work\\
+\midrule
+\endfirsthead
+\toprule Already known & New\\ \midrule \endhead
+A stretch is an affine map (Theorem~\ref{thm:affine}). &
+How an action is specified in cells: zone, fixed side, rules P3 and P5; shifting together with the zone.\\
+Loss as $\log_2$ of the number of preimages (Landauer \cite{landauer}). &
+Loss for actions on shapes: ``removing $h$ cells costs $h$ bits, restoring costs 0'' (Theorem~\ref{thm:loss}); exact loss of compressing a row (Theorem~\ref{thm:exact}).\\
+Euler's formula and hole counting in cell complexes \cite{kaczynski}. &
+Gluings separated from touching: the same cells can have different numbers of holes; stretching does not change the number of holes; a lossless hole requires a gluing (Theorem~\ref{thm:holes} and corollaries).\\
+NP-completeness of Normal Set Basis \cite{jiang}. &
+Link between the number of actions for reliefs and $R(H)$ ($\ell\le\ell(B)+R(H)$, equality in the column model), and $R(H)$ equal to the size of a normal set basis (Theorem~\ref{thm:np}).\\
+The rank of a product is at most its inner dimension; this bound is long used for rectangle decompositions of matrices. &
+Its application to $R(H)$ (Theorem~\ref{thm:rank}) and the tree method: savings are possible only inside a group of heights whose rows are linearly dependent (Theorem~\ref{thm:tree}).\\
+Dilation and erosion (morphology \cite{serra}). &
+The number of actions $\ell$: bounds, a box in $k$ actions, computability without loss (Theorems~\ref{thm:bounds}, \ref{thm:dec}); the segment rule (Theorem~\ref{thm:seg}).\\
+\bottomrule
+\end{longtable}
+
+\section{Comparison on examples}\label{sec:cmp}
+
+Different approaches count in different ``currencies'': here one step stretches a part $f$-fold, in assembly theory a step joins two pieces, in CSG a step is a tree node. So we do not ask ``which is better in general'' but what each approach sees and how many steps it needs on the same shapes.
+
+\paragraph{Example 1. Where the system is stronger: a cube.} An $m\times m\times m$ cube from one cell: here $\ell=3$ for every $m\ge2$ (Theorem~\ref{thm:bounds}(c)). In assembly theory \cite{assembly} one join at most doubles the number of cells, so at least $\log_2 m^3$ joins are needed: at least $9$ for $m=8$, at least $30$ for $m=1000$. In CSG \cite{requicha}, however, a cube is one primitive; there CSG is stronger, because boxes are given ready-made.
+
+\paragraph{Example 2. Where the system is stronger: a ladder of heights.} A relief of $D$ columns of heights $2,4,\dots,2^D$. A straightforward CSG tree assembles it from $D$ boxes. Here: the base row (1 action) and $\lceil\log_2(D+1)\rceil$ shared factors (Theorem~\ref{thm:R}(c)); for $D=15$ that is $1+4=5$ actions versus 15 boxes.
+
+\paragraph{Example 3. What only this system sees: gluings.} A $3\times3$ ring (8 cells). With all 8 joints glued, $d=1$ (one hole). With one joint unglued, $d=0$ (a ring with a crack). Digital topology \cite{kong} looks only at cells and gives the same answer for both. Here the difference also shows in cost: the ring is built without loss in 4 actions (three stretches and one gluing), with loss in 3 actions and 1 bit.
+
+\paragraph{Example 4. What only this system sees: the price in bits.} Morphological erosion also loses information, but does not say how much. Here compressing a row of length 20 twofold so that 4 cells vanish has exactly $N=4374$ preimages, i.e.\ $\approx12.1$ bits (Theorem~\ref{thm:exact}); the simple bound gives only $4$ bits.
+
+\paragraph{Example 5. Where the system is weaker: a diagonal.} A diagonal of $k\ge2$ cells (touching only at corners). It cannot be built by stretches alone: stretches preserve side-connectedness (preservation of pieces, §\ref{sec:props}). With deletion it takes 3 actions ($k\times k$ square and $\sigma$), but loses $k^2-k$ bits. In CSG a diagonal is a union of $k$ unit cubes with no loss at all.
+
+\paragraph{Example 6. Where the system is weaker: computing and rotations.} The factor problem $R(H)$ is NP-hard (Theorem~\ref{thm:np}); NP-hardness of $\ell$ itself is not proven, but there is no fast general method for $\ell$ either, only the method of §\ref{sec:compute}, which on some instances leaves a gap (e.g.\ $12\le R\le14$). Computability of $\ell$ with compressions and $\sigma$ is not proven (Problem~\ref{pr:dec}). The core has no rotations (they are in extension A.4); circles and slanted shapes are obtained only approximately, through limits (Theorem~\ref{thm:limit}).
+
+\paragraph{Summary.} The system does not replace CSG, morphology or affine geometry. Its contribution is a different question: how many steps and how many bits it costs to build a cell shape with the given actions. On repetitive, ``multiplicative'' shapes (boxes, ladders of powers) it is very economical; on sparse and slanted shapes it is expensive or needs loss.
+
 \section{Open problems}
 
+\begin{problem}\label{pr:np}
+Is computing $\ell$ NP-hard for reliefs (arbitrary chains) and in general?
+\end{problem}
 \begin{problem}\label{pr:dec}
 Is $\ell$ computable when compressions and $\sigma$ are allowed?
 \end{problem}
@@ -423,7 +474,13 @@ An analogue of Theorem~\ref{thm:holes} in dimension 3 with partial gluings and f
 
 \section{Formal verification}
 
-Files \texttt{lean/Setka/*.lean} (Lean~4, version 4.37.0-rc1, no external libraries): 42 theorems, only the axioms \texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}, no \texttt{sorry}. \texttt{Core.lean} is a machine record of the core: points of $\Z^n$, objects, $\alpha^\uparrow$, $\alpha^\downarrow$, $\sigma$, $\beta$, P3, chains, translation. Theorem names are given next to the statements. Not formalized: limits (need measure theory), the topological formulation of holes, and the published NP-completeness. Build: \texttt{lake build}; axiom check: \texttt{lake env lean Check.lean}.
+Two parts, 51 theorems in total, only the axioms \texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}, no \texttt{sorry}.
+
+(1) \texttt{lean/Setka/*.lean} (Lean~4, version 4.37.0-rc1, no external libraries): 42 theorems. \texttt{Core.lean} is a machine record of the core: points of $\Z^n$, objects, $\alpha^\uparrow$, $\alpha^\downarrow$, $\sigma$, $\beta$, P3, chains, translation. Build: \texttt{lake build}; axioms: \texttt{lake env lean Check.lean}.
+
+(2) \texttt{lean-mathlib/Setka2/*.lean} (the same Lean version and Mathlib of the same version): 9 theorems — the rank bound, the counting part of the tree method, and the preimage count in the exact loss formula. Build: \texttt{lake exe cache get}, then \texttt{lake build}.
+
+Theorem names are given next to the statements. Not formalized: limits (need measure theory), the topological formulation of holes, the published NP-completeness, the relation $\lc\le\ell\le\lc+2$ (needs gluings recorded in chains), the segment rule for $\ell_\alpha\le2$, the lower bound in the column model. Text proofs are given for these.
 
 \section{Related work}\label{sec:related}
 
