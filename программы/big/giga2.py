@@ -38,6 +38,10 @@ def guided(H,kmax,deadline,kmin,freq):
 def giga2(H,limit=60):
     H=sorted(set(h for h in H if h>1)); t=time.time()
     lb=max(rank(H),math.ceil(math.log2(len(H)+1))); ub=len(H); how='верх = число высот'
+    fs0=[fac(h) for h in H]
+    if all(max(f.values())==1 for f in fs0):
+        npat=len({tuple(p in f for f in fs0) for f in fs0 for p in f})
+        if npat<ub: ub=npat; how='верх = разные полосы'
     r=jumps(H,lb,3,time.time()+min(5,limit))
     if r and r[0]<ub: ub=r[0]; how='кент скачков'
     if ub==lb: return lb,lb,ub,how+' = низ',time.time()-t
@@ -45,7 +49,12 @@ def giga2(H,limit=60):
     import subprocess, os
     fs=[fac(h) for h in H]; primes=sorted({p for f in fs for p in f})
     if all(max(f.values())==1 for f in fs) and len(primes)<=24 and os.path.exists('./core_exact'):
-        masks=[sum(1<<primes.index(p) for p in f) for f in fs]
+        # одинаковые полосы (простые, которые стоят ровно в одних и тех же высотах) склеиваются в одну:
+        # в любом лучшем наборе их можно переставить так, чтобы они всегда шли вместе — ответ не меняется
+        pat={}
+        for p in primes: pat.setdefault(tuple(p in f for f in fs),[]).append(p)
+        groups=list(pat.values()); gi={p:i for i,g in enumerate(groups) for p in g}
+        masks=[sum(1<<gi[p] for p in f) for f in fs]; primes=groups
         left=max(1,int(limit-(time.time()-t)))
         out=subprocess.run(['./core_exact',str(left),str(lb),str(ub-1)],input=f"{len(H)} {len(primes)}\n"+" ".join(map(str,masks)),capture_output=True,text=True).stdout
         if 'R =' in out: k=int(out.split('R =')[1].split()[0]); return k,lb,k,'решатель на масках',time.time()-t
